@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 def load_from_file(file):
     datamatrix = np.loadtxt(file)
     datamatrix[:, 0] = datamatrix[:, 0] * -1
+    print(datamatrix.shape)
     return datamatrix
 
 def create_boxplots(datamatrix):
@@ -36,6 +37,8 @@ def std_cov_coff_matrices(datamatrix):
     return datamatrix_std, cov_matrix, coff_matrix
 
 
+
+
 def svd_graph(datamatrix_std):
     U, S, V = svd(datamatrix_std, full_matrices=False)
     rho = (S*S)/(S*S).sum()
@@ -49,8 +52,17 @@ def svd_graph(datamatrix_std):
         plt.xlabel('Principal components')
         plt.legend(loc='best')
         plt.tight_layout()
-
         plt.show()
+
+    datamatrix_projected = np.dot(datamatrix_std, V.T)
+    for c in range(0,3):
+        class_mask = datamatrix_std[:, 7+c].ravel() > 0
+        plt.scatter(datamatrix_projected[class_mask,0], datamatrix_projected[class_mask,1], label=(c+1))
+    plt.legend()
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.title('Origins show acress PC1 & PC2')
+    plt.show()
 
 
 
@@ -59,7 +71,6 @@ def svd_graph(datamatrix_std):
 if __name__ == '__main__':
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
-    create_boxplots(datamatrix)
     datamatrix = convert_using_1_to_k(datamatrix)
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
     svd_graph(datamatrix_std)
