@@ -10,6 +10,10 @@ def load_from_file(file):
     datamatrix[:, 0] = datamatrix[:, 0] * -1
     return datamatrix
 
+def create_boxplots(datamatrix):
+    for i in range(0,8):
+        plt.boxplot(datamatrix[:,i])
+        plt.show()
 
 def convert_using_1_to_k(inputmatrix):
     return np.hstack((inputmatrix[:, :7], np.reshape(get_one_to_k_matrix(),(len(datamatrix),3)) ))
@@ -55,6 +59,7 @@ def svd_graph(datamatrix_std):
 if __name__ == '__main__':
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
+    create_boxplots(datamatrix)
     datamatrix = convert_using_1_to_k(datamatrix)
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
     svd_graph(datamatrix_std)
