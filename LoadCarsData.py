@@ -16,6 +16,11 @@ def create_boxplots(datamatrix):
         plt.boxplot(datamatrix[:,i])
         plt.show()
 
+def create_histo(datamatrix):
+    for i in range(0,8):
+        plt.hist(datamatrix[:,i], bins='auto')
+        plt.show()
+
 def convert_using_1_to_k(inputmatrix):
     return np.hstack((inputmatrix[:, :7], np.reshape(get_one_to_k_matrix(),(len(datamatrix),3)) ))
 
