@@ -1,8 +1,12 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from scipy.linalg import svd
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
 #from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
+
+attributeNames = ['']
+origins = ['USA', 'Europe', 'Japan']
 
 
 def load_from_file(file):
@@ -10,6 +14,10 @@ def load_from_file(file):
     datamatrix[:, 0] = datamatrix[:, 0] * -1
     print(datamatrix.shape)
     return datamatrix
+
+def create_plots(datamatrix):
+    create_boxplots(datamatrix)
+    create_histo(datamatrix)
 
 def create_boxplots(datamatrix):
     for i in range(0,8):
@@ -31,7 +39,7 @@ def get_one_to_k_matrix():
 
 def vectorized(j):
     e = np.zeros((3,1))
-    e[int(j)-1] = 1.0
+    e[int(j)-1] = 1.0 / np.sqrt(3)
     return e
 
 
@@ -42,9 +50,7 @@ def std_cov_coff_matrices(datamatrix):
     return datamatrix_std, cov_matrix, coff_matrix
 
 
-
-
-def svd_graph(datamatrix_std):
+def svd_graph(datamatrix_std, made1_to_k):
     U, S, V = svd(datamatrix_std, full_matrices=False)
     rho = (S*S)/(S*S).sum()
     rho_cummulative = np.cumsum(rho)
@@ -60,25 +66,36 @@ def svd_graph(datamatrix_std):
         plt.show()
 
     datamatrix_projected = np.dot(datamatrix_std, V.T)
-    for c in range(0,3):
-        class_mask = datamatrix_std[:, 7+c].ravel() > 0
-        plt.scatter(datamatrix_projected[class_mask,0], datamatrix_projected[class_mask,1], label=(c+1))
+
+    if(made1_to_k):
+        for c in range(0, 3):
+            class_mask = datamatrix_std[:, 7 + c].ravel() > 0
+            plt.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], label=origins[c])
+    else :
+        unique_in_matrix = np.unique(datamatrix_std[:, 7])
+        for c in range(0, 3):
+            class_mask = datamatrix_std[:, 7].ravel() == unique_in_matrix[c]
+            plt.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], label=origins[c])
+
     plt.legend()
     plt.xlabel('PC1')
     plt.ylabel('PC2')
-    plt.title('Origins show acress PC1 & PC2')
+    plt.title('Origins show across PC1 & PC2')
     plt.show()
 
 
-
-
-
 if __name__ == '__main__':
+    made1_to_k = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
-    datamatrix = convert_using_1_to_k(datamatrix)
+    # create_plots(datamatrix)
+
+    if(made1_to_k):
+        datamatrix = convert_using_1_to_k(datamatrix)
+
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
-    svd_graph(datamatrix_std)
+
+    svd_graph(datamatrix_std, made1_to_k)
 
 
 '''  ## PCA
