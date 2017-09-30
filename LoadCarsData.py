@@ -130,6 +130,7 @@ if __name__ == '__main__':
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
 
     create_plots(datamatrix, datamatrix_std)
+    #create_plots(datamatrix_std, datamatrix_std)
 
     svd_graph(datamatrix_std, made1_to_k)
 
