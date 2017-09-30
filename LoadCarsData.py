@@ -28,8 +28,9 @@ def create_boxplots(datamatrix):
     for i in range(0, 8):
         plt.subplot(2, 4, i+1)
         plt.boxplot(datamatrix[:,i])
-        plt.title(attributeNames[i])
-        plt.show()
+        plt.ylabel(attributeNames[i])
+    plt.show()
+
 
 def create_histo(datamatrix):
     plt.figure(figsize=(2, 4))
@@ -38,7 +39,8 @@ def create_histo(datamatrix):
         plt.subplot(2, 4, i+1)
         plt.hist(datamatrix[:, i], color=color, edgecolor='black')
         plt.xlabel(attributeNames[i])
-        plt.show()
+
+    plt.show()
 
 def summary_statistics(datamatrix):
     for i in range(0,8):
@@ -61,7 +63,7 @@ def get_one_to_k_matrix():
 
 
 def vectorized(j):
-    e = np.zeros((3,1))
+    e = np.zeros((3, 1))
     e[int(j)-1] = 1.0 / np.sqrt(3)
     return e
 
@@ -100,9 +102,9 @@ def svd_graph(datamatrix_std, made1_to_k):
     rho_cummulative = np.cumsum(rho)
 
     with plt.style.context('seaborn-whitegrid'):
-        plt.figure(figsize=(6,4))
-        plt.bar(range(1,len(rho)+1), rho, alpha=0.6, align='center', label='Individual explained variance')
-        plt.step(range(1,len(rho)+1), rho_cummulative, where='mid', label='Cumulative explained variance')
+        plt.figure(figsize=(6, 4))
+        plt.bar(range(1, len(rho) + 1), rho, alpha=0.6, align='center', label='Individual explained variance')
+        plt.step(range(1, len(rho) + 1), rho_cummulative, where='mid', label='Cumulative explained variance')
         plt.ylabel("Explained variance ratio")
         plt.xlabel('Principal components')
         plt.legend(loc='best')
@@ -111,55 +113,39 @@ def svd_graph(datamatrix_std, made1_to_k):
 
     datamatrix_projected = np.dot(datamatrix_std, V.T)
 
-    if(made1_to_k):
+    if is3D:
+        f = plt.figure()
+        ax = f.add_subplot(111, projection='3d')
+        for c in range(0, 3):
+            class_mask = datamatrix_std[:, 7 + c].ravel() > 0
+            ax.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], datamatrix_projected[class_mask, 2], label=origins[c])
+        ax.view_init(45, 45)
+        ax.set_xlabel('PC1')
+        ax.set_ylabel('PC2')
+        ax.set_zlabel('PC3')
+        plt.title('Origins show across PC1 & PC2 & PC3')
+        plt.show()
+    else:
         for c in range(0, 3):
             class_mask = datamatrix_std[:, 7 + c].ravel() > 0
             plt.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], label=origins[c])
-    else :
-        unique_in_matrix = np.unique(datamatrix_std[:, 7])
-        for c in range(0, 3):
-            class_mask = datamatrix_std[:, 7].ravel() == unique_in_matrix[c]
-            plt.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], label=origins[c])
-
-    plt.legend()
-    plt.xlabel('PC1')
-    plt.ylabel('PC2')
-    plt.title('Origins show across PC1 & PC2')
-    plt.show()
+        plt.legend()
+        plt.xlabel('PC1')
+        plt.ylabel('PC2')
+        plt.title('Origins show across PC1 & PC2')
+        plt.show()
 
 
 if __name__ == '__main__':
-    made1_to_k = True
+    is3D = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
-    # create_plots(datamatrix)
 
-    if(made1_to_k):
+    if (made1_to_k):
         datamatrix_k = convert_using_1_to_k(datamatrix)
-
-
 
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
 
-    create_plots(datamatrix, datamatrix_std)
-    #create_plots(datamatrix_std, datamatrix_std)
+    #create_plots(datamatrix, datamatrix_std)
 
-    svd_graph(datamatrix_std, made1_to_k)
-
-
-'''  ## PCA
-eig_vals, eig_vecs = np.linalg.eig(cov_matrix)
-eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[:, i]) for i in range(len(eig_vals))]
-eig_pairs.sort(key=lambda x: x[0], reverse=True)
-
-PCAs = 4
-
-print(eig_pairs[0][1].shape)
-
-#matrix_w = eig_pairs[0][1].reshape(8, 1)
-for i in range(1, PCAs):
-    matrix_w = np.hstack((matrix_w, eig_pairs[i][1].reshape(8, 1)))
-
-#for line in file_object.readlines():
-#   print (line)
-'''
+    svd_graph(datamatrix_std, is3D)
