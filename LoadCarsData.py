@@ -15,21 +15,33 @@ def load_from_file(file):
     print(datamatrix.shape)
     return datamatrix
 
-def create_plots(datamatrix):
+
+def create_plots(datamatrix, datamatrix_std):
     create_boxplots(datamatrix)
     create_histo(datamatrix)
+    correlation_plots(datamatrix, datamatrix_std)
+
 
 def create_boxplots(datamatrix):
-    for i in range(0,7):
+    plt.figure(figsize=(2, 4))
+
+    for i in range(0, 8):
+        plt.subplot(2, 4, i+1)
         plt.boxplot(datamatrix[:,i])
-        plt.title(attributeNames[i])
-        plt.show()
+        plt.ylabel(attributeNames[i])
+    plt.show()
+
 
 def create_histo(datamatrix):
-    for i, color in enumerate(['red', 'yellow', 'blue', 'brown', 'green','cyan','purple'], start=0):
-        plt.hist(datamatrix[:,i], color=color, edgecolor='black')
+    plt.figure(figsize=(2, 4))
+
+    for i, color in enumerate(['red', 'yellow', 'blue', 'brown', 'green','cyan','purple', 'orange'], start=0):
+        plt.subplot(2, 4, i+1)
+        plt.hist(datamatrix[:, i], color=color, edgecolor='black')
         plt.xlabel(attributeNames[i])
-        plt.show()
+
+    plt.show()
+
 
 def convert_using_1_to_k(inputmatrix):
     return np.hstack((inputmatrix[:, :7], np.reshape(get_one_to_k_matrix(),(len(datamatrix),3)) ))
@@ -40,7 +52,7 @@ def get_one_to_k_matrix():
 
 
 def vectorized(j):
-    e = np.zeros((3,1))
+    e = np.zeros((3, 1))
     e[int(j)-1] = 1.0 / np.sqrt(3)
     return e
 
@@ -50,6 +62,27 @@ def std_cov_coff_matrices(datamatrix):
     cov_matrix = np.cov(datamatrix_std.T)
     coff_matrix = np.corrcoef(datamatrix_std.T)
     return datamatrix_std, cov_matrix, coff_matrix
+
+
+def correlation_plots(datamatrix, datamatrix_std):
+    plt.figure(figsize=(8, 8))
+
+    for m1 in range(len(attributeNames)):
+        for m2 in range(len(attributeNames)):
+            plt.subplot(len(attributeNames), len(attributeNames), m1 * len(attributeNames) + m2 + 1)
+            for c in range(0, 3):
+                class_mask = datamatrix_std[:, 7+c].ravel() > 0
+                plt.plot(datamatrix[class_mask, m2], datamatrix[class_mask, m1], '.', label=origins[c])
+                if m1 == len(attributeNames) - 1:
+                    plt.xlabel(attributeNames[m2])
+                else:
+                    plt.xticks([])
+                if m2 == 0:
+                    plt.ylabel(attributeNames[m1])
+                else:
+                    plt.yticks([])
+    plt.legend()
+    plt.show()
 
 
 def svd_graph(datamatrix_std, made1_to_k):
@@ -90,12 +123,13 @@ if __name__ == '__main__':
     made1_to_k = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
-    # create_plots(datamatrix)
 
-    if(made1_to_k):
-        datamatrix = convert_using_1_to_k(datamatrix)
+    if (made1_to_k):
+        datamatrix_k = convert_using_1_to_k(datamatrix)
 
-    datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
+    datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
+
+    create_plots(datamatrix, datamatrix_std)
 
     svd_graph(datamatrix_std, made1_to_k)
 
