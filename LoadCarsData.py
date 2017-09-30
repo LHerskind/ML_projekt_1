@@ -28,9 +28,8 @@ def create_boxplots(datamatrix):
     for i in range(0, 8):
         plt.subplot(2, 4, i+1)
         plt.boxplot(datamatrix[:,i])
-        plt.ylabel(attributeNames[i])
-    plt.show()
-
+        plt.title(attributeNames[i])
+        plt.show()
 
 def create_histo(datamatrix):
     plt.figure(figsize=(2, 4))
@@ -39,9 +38,19 @@ def create_histo(datamatrix):
         plt.subplot(2, 4, i+1)
         plt.hist(datamatrix[:, i], color=color, edgecolor='black')
         plt.xlabel(attributeNames[i])
+        plt.show()
 
-    plt.show()
-
+def summary_statistics(datamatrix):
+    for i in range(0,8):
+        mean_x = datamatrix[:,i].mean()
+        std_x = datamatrix[:,i].std(ddof=1)
+        median_x = np.median(datamatrix[:,i])
+        range_x = datamatrix[:,i].max() - datamatrix[:,i].min()
+        print(attributeNames[i])
+        print('Mean:', mean_x)
+        print('Standard Deviation:', std_x)
+        print('Median:', median_x)
+        print('Range:', range_x)
 
 def convert_using_1_to_k(inputmatrix):
     return np.hstack((inputmatrix[:, :7], np.reshape(get_one_to_k_matrix(),(len(datamatrix),3)) ))
@@ -52,7 +61,7 @@ def get_one_to_k_matrix():
 
 
 def vectorized(j):
-    e = np.zeros((3, 1))
+    e = np.zeros((3,1))
     e[int(j)-1] = 1.0 / np.sqrt(3)
     return e
 
@@ -123,9 +132,10 @@ if __name__ == '__main__':
     made1_to_k = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
+    # create_plots(datamatrix)
 
-    if (made1_to_k):
-        datamatrix_k = convert_using_1_to_k(datamatrix)
+    if(made1_to_k):
+        datamatrix = convert_using_1_to_k(datamatrix)
 
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
 
