@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
 #from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
-attributeNames = ['MPG','Cylinders','Horsepower','Weight (lbs)','Acceleration (MPH)','Model year','Origin']
+attributeNames = ['MPG','Cylinders','Displacment','Horsepower','Weight (lbs)','Acceleration (MPH)','Model year','Origin']
 origins = ['USA', 'Europe', 'Japan']
 
 
@@ -20,14 +20,14 @@ def create_plots(datamatrix):
     create_histo(datamatrix)
 
 def create_boxplots(datamatrix):
-    for i in range(0,8):
+    for i in range(0,7):
         plt.boxplot(datamatrix[:,i])
-        plt.ylabel(attributeNames[i])
+        plt.title(attributeNames[i])
         plt.show()
 
 def create_histo(datamatrix):
-    for i in range(0,8):
-        plt.hist(datamatrix[:,i], color=(0.2, 0.8-i*0.2, 0.4))
+    for i, color in enumerate(['red', 'yellow', 'blue', 'brown', 'green','cyan','purple'], start=0):
+        plt.hist(datamatrix[:,i], color=color, edgecolor='black')
         plt.xlabel(attributeNames[i])
         plt.show()
 
@@ -91,6 +91,7 @@ if __name__ == '__main__':
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
     # create_plots(datamatrix)
+
     if(made1_to_k):
         datamatrix = convert_using_1_to_k(datamatrix)
 
