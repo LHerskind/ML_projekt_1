@@ -135,7 +135,9 @@ if __name__ == '__main__':
     # create_plots(datamatrix)
 
     if(made1_to_k):
-        datamatrix = convert_using_1_to_k(datamatrix)
+        datamatrix_k = convert_using_1_to_k(datamatrix)
+
+
 
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
 
