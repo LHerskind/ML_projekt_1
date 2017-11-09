@@ -11,6 +11,7 @@ from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show
 from scipy import stats
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
+import sklearn.neural_network as nn
 
 #from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
@@ -207,11 +208,26 @@ def linear_reg(input_matrix,index, outer_cross_number, inner_cross_number):
             xlabel('Iteration')
 
         print('Cross validation fold {0}/{1}'.format(k + 1, K))
-        print('Train indices: {0}'.format(train_index))
-        print('Test indices: {0}'.format(test_index))
+        #print('Train indices: {0}'.format(train_index))
+        #print('Test indices: {0}'.format(test_index))
         print('Features no: {0}\n'.format(selected_features.size))
 
         k += 1
+
+    print('\n')
+    print('Linear regression without feature selection:\n')
+    print('- Training error: {0}'.format(Error_train.mean()))
+    print('- Test error:     {0}'.format(Error_test.mean()))
+    print('- R^2 train:     {0}'.format(
+        (Error_train_nofeatures.sum() - Error_train.sum()) / Error_train_nofeatures.sum()))
+    print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test.sum()) / Error_test_nofeatures.sum()))
+    print('Linear regression with feature selection:\n')
+    print('- Training error: {0}'.format(Error_train_fs.mean()))
+    print('- Test error:     {0}'.format(Error_test_fs.mean()))
+    print('- R^2 train:     {0}'.format(
+        (Error_train_nofeatures.sum() - Error_train_fs.sum()) / Error_train_nofeatures.sum()))
+    print(
+        '- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test_fs.sum()) / Error_test_nofeatures.sum()))
 
     figure(k)
     subplot(1, 3, 2)
@@ -255,11 +271,15 @@ def find_best_K(input_matrix, index):
 
     N, M = X.shape
 
-    CV = cross_validation.LeaveOneOut(N)
+    K = 20
+
+    CV = cross_validation.KFold(N,K,shuffle=True)
+
+    #CV = cross_validation.LeaveOneOut(N)
     errors = np.zeros((N, L))
     i = 0
     for train_index, test_index in CV:
-        print('Crossvalidation fold: {0}/{1}'.format(i + 1, N))
+        print('Crossvalidation fold: {0}/{1}'.format(i + 1, K))
 
         # extract training and test set for current CV fold
         X_train = X[train_index, :]
@@ -285,10 +305,56 @@ def find_best_K(input_matrix, index):
             best = a
             bestValue = ers[a]
 
-    print(best+1, bestValue)
+ #   print(best+1, bestValue)
 
     return best+1
 
+def find_best_ANN(input_matrix, index):
+    X, y = split_train_test(input_matrix, index)
+
+    L = 20
+    ######## We have to roudn otherwise fit won't run #########
+    X = np.round(X)
+    y = np.round(y)
+
+    N, M = X.shape
+
+    K = 20
+
+    CV = cross_validation.KFold(N,K,shuffle=True)
+    errors = np.zeros((N, L))
+    i = 0
+    for train_index, test_index in CV:
+        print('Crossvalidation fold: {0}/{1}'.format(i + 1, K))
+
+        # extract training and test set for current CV fold
+        X_train = X[train_index, :]
+        y_train = y[train_index]
+        X_test = X[test_index, :]
+        y_test = y[test_index]
+
+        # Fit classifier and classify the test points (consider 1 to 40 neighbors)
+        for l in range(1, L + 1):
+            clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1,
+                                   hidden_layer_sizes=(l,), random_state=1)
+            clf.fit(X_train, y_train)
+            y_est = clf.predict(X_test);
+            errors[i, l - 1] = np.sum(y_est[0] != y_test[0])
+
+        i += 1
+
+    # Plot the classification error rate
+    ers = 100 * sum(errors, 0) / N
+    best = 0
+    bestValue = 100
+    for a in range(L):
+        if ers[a] < bestValue:
+            best = a
+            bestValue = ers[a]
+
+ #   print(best+1, bestValue)
+
+    return best+1
 
 def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_cross_number):
     X, y = split_train_test(input_matrix, index)
@@ -300,6 +366,7 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
     N, M = X.shape
 
     L = find_best_K(input_matrix, index)
+    Neurons = find_best_ANN(input_matrix, index)
 
     K = outer_cross_number
     CV = cross_validation.KFold(N, K, shuffle=True)
@@ -315,6 +382,7 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
     Error_dectree = np.empty((K, 1))
     Error_nb = np.zeros((K,1))
     Error_K = np.zeros((K, 1))
+    Error_nn = np.zeros((K,1))
     n_tested = 0
 
     k = 0
@@ -344,15 +412,15 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
         Error_dectree[k] = 100 * (y_dectree != y_test).sum().astype(float) / len(y_test)
 
 
-        #Fit and evaluate K-nearest classifier
+        #Fit and evaluate naive bayes classifier
         nb_classifier = MultinomialNB(alpha=alpha, fit_prior=est_prior)
         nb_classifier.fit(X_train, y_train)
         y_est_prob = nb_classifier.predict_proba(X_test)
         y_est = np.argmax(y_est_prob, 1)
 
-        #errors[k] = np.sum(y_est != y_test, dtype=float) / y_test.shape[0]
+        Error_nb[k] = 100 * np.sum(y_est != y_test, dtype=float) / y_test.shape[0]
 
-        Error_nb[k] = 100 * (y_est != y_test).sum().astype(float) / len(y_test)
+        #Error_nb[k] = 100 * (y_est != y_test).sum().astype(float) / len(y_test)
 
         # Fit classifier and classify the test points (consider 1 to 40 neighbors)
 
@@ -363,6 +431,13 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
 
         Error_K[k] = 100 * (y_estK != y_test).sum().astype(float) / len(y_test)
 
+        clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1,
+                               hidden_layer_sizes=(Neurons,), random_state=1)
+        clf.fit(X_train, y_train);
+        y_estnn = clf.predict(X_test);
+        # Error_K[k] = np.sum(y_est[0] != y_test[0])
+
+        Error_nn[k] = 100 * (y_estnn != y_test).sum().astype(float) / len(y_test)
 
         k += 1
 
@@ -386,7 +461,7 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
 
     # Boxplot to compare classifier error distributions
     figure()
-    plt.boxplot(np.bmat('Error_logreg, Error_dectree, Error_nb, Error_K'))
+    plt.boxplot(np.bmat('Error_logreg, Error_dectree, Error_nb, Error_K, Error_nn'))
     xlabel('Logistic Regression   vs.   Decision Tree')
     ylabel('Cross-validation error [%]')
 
@@ -408,9 +483,10 @@ if __name__ == '__main__':
     #datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
     #create_plots(datamatrix_std, datamatrix_std)
     #svd_graph(datamatrix_std, made1_to_k)
-    #linear_reg(datamatrix, 3, 10, 10)
+    #linear_reg(datamatrix, 4, 10, 10)
     two_layered_cross_validation(datamatrix, 7, 10,0)
     #find_best_K(datamatrix, 7)
+    #print(find_best_ANN(datamatrix, 7))
 
 
 
