@@ -6,10 +6,8 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
 
 
-def two_layer_cross_validation_k_neighbours(input_data, index_to_check, outer_cross_number, inner_cross_number):
+def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
-
-    max_neighbours = 40
 
     N_outer, M_outer = X_outer.shape
 
