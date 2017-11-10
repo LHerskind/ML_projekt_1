@@ -304,7 +304,7 @@ if __name__ == '__main__':
     # datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
     # create_plots(datamatrix_std, datamatrix_std)
     # svd_graph(datamatrix_std, made1_to_k)
-    linear_reg(datamatrix, 0, 10, 10)
+    # linear_reg(datamatrix, 0, 10, 10)
     # two_layered_cross_validation(datamatrix, 7, 10, 0)
     # find_best_K(datamatrix, 7)
     # print(find_best_ANN(datamatrix, 7))
@@ -314,5 +314,5 @@ if __name__ == '__main__':
 
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 5, 5)
-    # CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
-    CV_bestnn_reg.two_layer_cross_validation(datamatrix, 0, 5, 5)
+    CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
+    # CV_bestnn_reg.two_layer_cross_validation(datamatrix, 0, 5, 5)
