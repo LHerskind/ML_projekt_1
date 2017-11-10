@@ -17,7 +17,8 @@ import CV_BestK
 
 # from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
-attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
+attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year',
+                  'Origin']
 origins = ['USA', 'Europe', 'Japan']
 
 
@@ -135,7 +136,8 @@ def svd_graph(datamatrix_std, made1_to_k):
         ax = f.add_subplot(111, projection='3d')
         for c in range(0, 3):
             class_mask = datamatrix_std[:, 7 + c].ravel() > 0
-            ax.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1], datamatrix_projected[class_mask, 2], label=origins[c])
+            ax.scatter(datamatrix_projected[class_mask, 0], datamatrix_projected[class_mask, 1],
+                       datamatrix_projected[class_mask, 2], label=origins[c])
         ax.view_init(45, 45)
         ax.set_xlabel('PC1')
         ax.set_ylabel('PC2')
@@ -167,9 +169,9 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     # CV = model_selection.KFold(K,True)
 
     neurons = 20
-    learning_goal = 2
+    learning_goal = 10
     max_epochs = 64
-    show_error_freq = 50
+    show_error_freq = 3
 
     temp = attributeNames[index]
     attributeNamesShorter = attributeNames
@@ -200,7 +202,8 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
         Error_train[k] = np.square(y_train - m.predict(X_train)).sum() / y_train.shape[0]
         Error_test[k] = np.square(y_test - m.predict(X_test)).sum() / y_test.shape[0]
         textout = ''
-        selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,
+        selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train,
+                                                                              internal_cross_validation,
                                                                               display=textout)
 
         Features[selected_features, k] = 1
@@ -213,9 +216,8 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
             Error_test_fs[k] = np.square(y_test - m.predict(X_test[:, selected_features])).sum() / y_test.shape[0]
 
             # ann = nl.net.newff([[0, 1], [0, 1]], [neurons, 1], [nl.trans.TanSig(), nl.trans.PureLin()])
-            ann = nl.net.newff([[-3, 3]] * M, [neurons, 1], [nl.trans.TanSig(), nl.trans.PureLin()])
-
-            ann.train(X_train, y_train, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
+            ann = nl.net.newff([[-1, 1]] * M, [neurons, 1], [nl.trans.TanSig(), nl.trans.PureLin()])
+            ann.train(X_train_2, y_train_2, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
 
             #            Error_train_nn[k] =
             Error_test_nn[k] = np.square(y_test - ann.predict(X_test)).sum() / y_test.shape[0]
@@ -243,13 +245,16 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     print('Linear regression without feature selection:\n')
     print('- Training error: {0}'.format(Error_train.mean()))
     print('- Test error:     {0}'.format(Error_test.mean()))
-    print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum() - Error_train.sum()) / Error_train_nofeatures.sum()))
+    print('- R^2 train:     {0}'.format(
+        (Error_train_nofeatures.sum() - Error_train.sum()) / Error_train_nofeatures.sum()))
     print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test.sum()) / Error_test_nofeatures.sum()))
     print('Linear regression with feature selection:\n')
     print('- Training error: {0}'.format(Error_train_fs.mean()))
     print('- Test error:     {0}'.format(Error_test_fs.mean()))
-    print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum() - Error_train_fs.sum()) / Error_train_nofeatures.sum()))
-    print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test_fs.sum()) / Error_test_nofeatures.sum()))
+    print('- R^2 train:     {0}'.format(
+        (Error_train_nofeatures.sum() - Error_train_fs.sum()) / Error_train_nofeatures.sum()))
+    print(
+        '- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test_fs.sum()) / Error_test_nofeatures.sum()))
     print('Neural newtork :\n')
     print('- Training error: {0}'.format(Error_train_nn.mean()))
     print('- Test error:     {0}'.format(Error_test_nn.mean()))
@@ -414,7 +419,6 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
 
         # Fit and evaluate Logistic Regression classifier
         model = lm.logistic.LogisticRegression(C=N)
-
         model = model.fit(X_train, y_train)
         y_logreg = model.predict(X_test)
         Error_logreg[k] = 100 * (y_logreg != y_test).sum().astype(float) / len(y_test)
@@ -473,6 +477,74 @@ def two_layered_cross_validation(input_matrix, index, outer_cross_number, inner_
     return 0;
 
 
+def two_layer_cross_validation_classification(input_data, index_to_check, outer_cross_number, inner_cross_number):
+    X_outer, y_outer = split_train_test(input_data, index_to_check)
+
+    N_outer, M_outer = X_outer.shape
+
+    neighbours = 5
+
+    CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
+    number_of_models = 2
+
+    test_error = list()
+    k_outer = 0
+    for train_index_outer, test_index_outer in CV_outer:
+        X_par = X_outer[train_index_outer, :]
+        y_par = y_outer[train_index_outer]
+        X_val = X_outer[test_index_outer, :]
+        y_val = y_outer[test_index_outer]
+
+        error_matrix = np.zeros(shape=(inner_cross_number, number_of_models))
+
+        N_inner, M_inner = X_par.shape
+
+        CV_inner = cross_validation.KFold(len(X_par), inner_cross_number, shuffle=True)
+
+        k = 0
+        for train_index_inner, test_index_inner in CV_inner:
+            print('Crossvalidation fold: {0}/{1}'.format(k + 1, inner_cross_number))
+
+            X_train = X_par[train_index_inner, :]
+            y_train = y_par[train_index_inner]
+            X_test = X_par[test_index_inner, :]
+            y_test = y_par[test_index_inner]
+            size = X_train.shape[0]
+
+            knclassifier = KNeighborsClassifier(n_neighbors=neighbours)
+            knclassifier.fit(X_train, y_train)
+            error_matrix[k][0] = np.square(y_test - knclassifier.predict(X_test)).sum() / y_test.shape[0]
+
+            logmodel = lm.logistic.LogisticRegression(C=N_outer)
+            logmodel.fit(X_train, y_train)
+            error_matrix[k][1] = np.square(y_test - logmodel.predict(X_test)).sum() / y_test.shape[0]
+
+            k += 1
+        # Generalization error
+        Error_gen = list()
+
+        for i in range(inner_cross_number):
+            sum = (float(size) / X_par.shape[0]) * error_matrix[i][0]
+            Error_gen.append(sum)
+            sum = (float(size) / X_par.shape[0]) * error_matrix[i][1]
+            Error_gen.append(sum)
+
+        index = Error_gen.index(np.min(Error_gen))
+        plot()
+        knclassifier = KNeighborsClassifier(n_neighbors=neighbours)
+        knclassifier.fit(X_par, y_par)
+        y_est = knclassifier.predict(X_val)
+        # y_est = np.rint(y_est)
+
+        test_error.append(np.power(y_est - y_val, 2).sum().astype(float) / y_test.shape[0])
+        print('{0}-Neighbours test error: {1}'.format(neighbours, test_error[k_outer]))
+        print('Log test error: {0}'.format(neighbours, test_error[k_outer]))
+        k_outer += 1
+
+    print('Mean-square {0}-neighbours error: {1}'.format(neighbours, np.mean(test_error)))
+    print('Mean-square {0}-neighbours error: {1}'.format(neighbours, np.mean(test_error)[:, 0]))
+
+
 def two_layer_cross_validation_k_neighbours(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
 
@@ -522,11 +594,11 @@ def two_layer_cross_validation_k_neighbours(input_data, index_to_check, outer_cr
 
         index = Error_gen.index(np.min(Error_gen))
         plot()
-        print('Optimal amount of hidden units: {0}'.format(index + 1))
+        print('Optimal amount of neighbours: {0}'.format(index + 1))
         knclassifier = KNeighborsClassifier(n_neighbors=index + 1)
         knclassifier.fit(X_par, y_par)
         y_est = knclassifier.predict(X_val)
-        y_est = np.rint(y_est)
+        # y_est = np.rint(y_est)
 
         test_error.append(np.power(y_est - y_val, 2).sum().astype(float) / y_test.shape[0])
         print('Test error: {0}'.format(test_error[k_outer]))
@@ -534,6 +606,67 @@ def two_layer_cross_validation_k_neighbours(input_data, index_to_check, outer_cr
 
     print('Mean-square error: {0}'.format(np.mean(test_error)))
 
+
+def two_layer_cross_validation_clf_ann(input_data, index_to_check, outer_cross_number, inner_cross_number):
+    X_outer, y_outer = split_train_test(input_data, index_to_check)
+
+    max_neighbours = 40
+
+    N_outer, M_outer = X_outer.shape
+
+    CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
+
+    test_error = list()
+    k_outer = 0
+    for train_index_outer, test_index_outer in CV_outer:
+        X_par = X_outer[train_index_outer, :]
+        y_par = y_outer[train_index_outer]
+        X_val = X_outer[test_index_outer, :]
+        y_val = y_outer[test_index_outer]
+
+        error_matrix = np.zeros(shape=(inner_cross_number, max_neighbours))
+
+        CV_inner = cross_validation.KFold(len(X_par), inner_cross_number, shuffle=True)
+
+        k = 0
+        for train_index_inner, test_index_inner in CV_inner:
+            print('Crossvalidation fold: {0}/{1}'.format(k + 1, inner_cross_number))
+
+            X_train = X_par[train_index_inner, :]
+            y_train = y_par[train_index_inner]
+            X_test = X_par[test_index_inner, :]
+            y_test = y_par[test_index_inner]
+            size = X_train.shape[0]
+
+            for i in range(max_neighbours):
+                clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(i + 1,), random_state=1)
+                clf.fit(X_train, y_train)
+                error_matrix[k][i] = np.square(y_test - clf.predict(X_test)).sum() / y_test.shape[0]
+            k += 1
+
+            # Generalization error
+        Error_gen = list()
+
+        for i in range(max_neighbours):
+            sum = 0.0
+            for j in range(inner_cross_number):
+                sum += (float(size) / X_par.shape[0]) * error_matrix[j][i]
+            Error_gen.append(sum)
+        print(Error_gen)
+
+        index = Error_gen.index(np.min(Error_gen))
+        plot()
+        print('Optimal amount of hidden units: {0}'.format(index + 1))
+        clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(index + 1,), random_state=1)
+        clf.fit(X_train, y_train)
+        y_est = clf.predict(X_val)
+        y_est = np.rint(y_est)
+
+        test_error.append(np.power(y_est - y_val, 2).sum().astype(float) / y_test.shape[0])
+        print('Test error: {0}'.format(test_error[k_outer]))
+        k_outer += 1
+
+    print('Mean-square error: {0}'.format(np.mean(test_error)))
 
 
 if __name__ == '__main__':
@@ -559,4 +692,6 @@ if __name__ == '__main__':
 
     # svd_graph(datamatrix_std, is3D)
 
-    two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
+    # two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
+    # two_layer_cross_validation_clf_ann(datamatrix, 7, 10, 10)
+    two_layer_cross_validation_classification(datamatrix, 7, 10, 10)
