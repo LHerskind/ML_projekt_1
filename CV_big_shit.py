@@ -18,6 +18,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
 
     neighbours = 5
     hidden_neurons = 11
+    nb_alpha = 50
 
     CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
 
@@ -68,12 +69,12 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model = dt
                 best_model_error = error_2
 
-            nb_classifier = MultinomialNB(alpha=1, fit_prior=False)
+            nb_classifier = MultinomialNB(alpha=nb_alpha, fit_prior=False)
             nb_classifier.fit(X_train, y_train)
             y_est_prob = nb_classifier.predict_proba(X_test)
             y_est = np.argmax(y_est_prob, 1)
 
-            error_2 = 100 * np.sum(y_test.ravel() != y_est.ravel()) / y_test.shape[0]
+            error_2 = 100 * np.sum(y_test != y_est) / y_test.shape[0]
             test_error_nb.append(error_2)
 
             if error_2 < best_model_error:
@@ -111,11 +112,10 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
         y_est = dt.predict(X_val)
         test_error_dt.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
-        nb_classifier = MultinomialNB(alpha=1, fit_prior=False)
+        nb_classifier = MultinomialNB(alpha=nb_alpha, fit_prior=False)
         nb_classifier.fit(X_train, y_train)
         y_est = nb_classifier.predict_proba(X_val)
         y_est = np.argmax(y_est, 1)
-        y_est = np.rint(y_est)
         test_error_nb.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
         clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1)

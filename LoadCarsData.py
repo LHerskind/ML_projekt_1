@@ -1,22 +1,23 @@
+import CV_BestK
+import CV_bestnb_clas
+import CV_bestnn_classification
+import CV_bestnn_reg
+import CV_big_shit
+import neurolab as nl
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from scipy.linalg import svd
 # from sklearn import model_selection
 import sklearn.linear_model as lm
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn import cross_validation, tree
+import sklearn.neural_network as nn
 from matplotlib import pyplot as plt
-from toolbox_02450 import feature_selector_lr, bmplot
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
+from mpl_toolkits.mplot3d import Axes3D
 from scipy import stats
+from scipy.linalg import svd
+from sklearn import cross_validation, tree
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
-import sklearn.neural_network as nn
-import neurolab as nl
-import CV_BestK
-import CV_bestnn_classification
-import CV_big_shit
-import CV_bestnn_reg
+from sklearn.preprocessing import StandardScaler
+from toolbox_02450 import feature_selector_lr, bmplot
 
 # from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
@@ -162,17 +163,17 @@ def split_train_test(input_matrix, index):
     print(X.shape)
     return X, y
 
-
+# https://github.com/zammitjames/neurolab/issues/8
 def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     X, y = split_train_test(input_matrix, index)
     N, M = X.shape
     K = outer_cross_number
     # CV = model_selection.KFold(K,True)
 
-    neurons = 20
-    learning_goal = 0.02
-    max_epochs = 500
-    show_error_freq = 100
+    neurons = 5
+    learning_goal = 10
+    max_epochs = 64 * 5
+    show_error_freq = 65
 
     temp = attributeNames[index]
     attributeNamesShorter = attributeNames
@@ -203,8 +204,7 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
         Error_train[k] = np.square(y_train - m.predict(X_train)).sum() / y_train.shape[0]
         Error_test[k] = np.square(y_test - m.predict(X_test)).sum() / y_test.shape[0]
         textout = ''
-        selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,
-                                                                              display=textout)
+        selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation, display=textout)
 
         Features[selected_features, k] = 1
         # .. alternatively you could use module sklearn.feature_selection
@@ -215,13 +215,23 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
             Error_train_fs[k] = np.square(y_train - m.predict(X_train[:, selected_features])).sum() / y_train.shape[0]
             Error_test_fs[k] = np.square(y_test - m.predict(X_test[:, selected_features])).sum() / y_test.shape[0]
 
+            y_train_2 = np.asmatrix([[x] for x in y_train])
+            y_test_2 = np.asmatrix([[x] for x in y_test])
             ann = nl.net.newff([[-3, 3]] * M, [neurons, 1], [nl.trans.TanSig(), nl.trans.PureLin()])
-            y_train_2 = [[x] for x in y_train]
-            ann.train(X_train, y_train_2, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
-            y_test_2 = [[x] for x in y_test]
+            # Please fucking train
+            '''X_train = (X_train - np.mean(X_train)) / np.std(X_train)
+            y_train_2 = (y_train_2 - np.mean(y_train_2)) / np.std(y_train_2)
+            X_test = (X_test - np.mean(X_test)) / np.std(X_test)
+            y_test_2 = (y_test_2 - np.mean(y_test_2)) / np.std(y_test_2)'''
 
-            Error_train_nn[k] = np.square(ann.sim(X_train) - y_train_2).sum() / y_train.shape[0]
-            Error_test_nn[k] = np.square(ann.sim(X_test) - y_test_2).sum() / y_test.shape[0]
+            ann.train(X_train, y_train_2, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
+            y_est_train = ann.sim(X_train)
+            y_est_test = ann.sim(X_test)
+            #print('A2:', y_est_train)
+            #print('B:', y_train_2)
+
+            Error_train_nn[k] = np.square(y_est_train - y_train_2).sum() / y_train.shape[0]
+            Error_test_nn[k] = np.square(y_est_test - y_test_2).sum() / y_test.shape[0]
 
             # figure(k)
             # subplot(1, 2, 1)
@@ -290,10 +300,15 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
         show()
 
 
+def fix_data(input_matrix):
+    datamatrix[7] = datamatrix[7] - 1
+
+
 if __name__ == '__main__':
     is3D = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
+    fix_data(datamatrix)
     # create_plots(datamatrix)
 
     # summary_statistics(datamatrix)
@@ -301,10 +316,10 @@ if __name__ == '__main__':
     # if(made1_to_k):
     #    datamatrix_k = convert_using_1_to_k(datamatrix)
 
-    # datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix_k)
+    datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
     # create_plots(datamatrix_std, datamatrix_std)
     # svd_graph(datamatrix_std, made1_to_k)
-    # linear_reg(datamatrix, 0, 10, 10)
+    linear_reg(datamatrix_std, 0, 10, 10)
     # two_layered_cross_validation(datamatrix, 7, 10, 0)
     # find_best_K(datamatrix, 7)
     # print(find_best_ANN(datamatrix, 7))
@@ -312,6 +327,7 @@ if __name__ == '__main__':
     # create_plots(datamatrix, datamatrix_std)
     # svd_graph(datamatrix_std, is3D)
 
+    # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 5, 5)
     CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
