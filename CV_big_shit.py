@@ -18,7 +18,6 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
 
     neighbours = 5
     hidden_neurons = 11
-    nb_alpha = 50
 
     CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
 
@@ -51,8 +50,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             X_test = X_par[test_index_inner, :]
             y_test = y_par[test_index_inner]
 
-            log = lm.logistic.LogisticRegression(C=N_inner)
-            log.fit(X_train, y_train)
+            log = lm.logistic.LogisticRegression(C=N_inner).fit(X_train, y_train)
             error_2 = 100 * np.sum(y_test.ravel() != log.predict(X_test).ravel()) / y_test.shape[0]
             test_error_log.append(error_2)
 
@@ -60,8 +58,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model = log
                 best_model_error = error_2
 
-            dt = tree.DecisionTreeClassifier()
-            dt.fit(X_train, y_train)
+            dt = tree.DecisionTreeClassifier().fit(X_train, y_train)
             error_2 = 100 * np.sum(y_test.ravel() != dt.predict(X_test).ravel()) / y_test.shape[0]
             test_error_dt.append(error_2)
 
@@ -69,10 +66,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model = dt
                 best_model_error = error_2
 
-            nb_classifier = MultinomialNB(alpha=nb_alpha, fit_prior=False)
-            nb_classifier.fit(X_train, y_train)
-            y_est_prob = nb_classifier.predict_proba(X_test)
-            y_est = np.argmax(y_est_prob, 1)
+            nb_classifier = MultinomialNB().fit(X_train, y_train)
+            y_est = nb_classifier.predict_proba(X_test)
+            y_est = np.argmax(y_est, 1) + 1
 
             error_2 = 100 * np.sum(y_test != y_est) / y_test.shape[0]
             test_error_nb.append(error_2)
@@ -81,8 +77,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model = nb_classifier
                 best_model_error = error_2
 
-            clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1)
-            clf.fit(X_train, y_train)
+            clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1).fit(X_train, y_train)
             error_2 = 100 * np.sum(y_test.ravel() != clf.predict(X_test).ravel()) / y_test.shape[0]
             test_error_nn.append(error_2)
 
@@ -90,8 +85,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model = clf
                 best_model_error = error_2
 
-            knclassifier = KNeighborsClassifier(n_neighbors=neighbours)
-            knclassifier.fit(X_train, y_train)
+            knclassifier = KNeighborsClassifier(n_neighbors=neighbours).fit(X_train, y_train)
             error_2 = 100 * np.sum(y_test.ravel() != knclassifier.predict(X_test)) / y_test.shape[0]
             test_error_k.append(error_2)
 
@@ -102,30 +96,29 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             k += 1
 
         # Generalization error
-        log = lm.logistic.LogisticRegression(C=N_inner)
-        log.fit(X_train, y_train)
+        log = lm.logistic.LogisticRegression(C=N_inner).fit(X_par, y_par)
         y_est = log.predict(X_val)
         test_error_log.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
-        dt = tree.DecisionTreeClassifier()
-        dt.fit(X_train, y_train)
+        dt = tree.DecisionTreeClassifier().fit(X_par, y_par)
         y_est = dt.predict(X_val)
         test_error_dt.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
-        nb_classifier = MultinomialNB(alpha=nb_alpha, fit_prior=False)
-        nb_classifier.fit(X_train, y_train)
-        y_est = nb_classifier.predict_proba(X_val)
-        y_est = np.argmax(y_est, 1)
+        nb_classifier = MultinomialNB().fit(X_par, np.asarray(y_par))
+        y_est_prob = nb_classifier.predict_proba(X_val)
+        # y_est = nb_classifier.predict_proba(X_val)
+        print('A:', y_est_prob)
+        y_est = np.argmax(y_est_prob, 1) + 1
+        print('C:', y_est)
+        print('D:', np.rint(y_val))
         test_error_nb.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
-        clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1)
-        clf.fit(X_train, y_train)
+        clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1).fit(X_par, y_par)
         y_est = clf.predict(X_val)
         y_est = np.rint(y_est)
         test_error_nn.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
-        knclassifier = KNeighborsClassifier(n_neighbors=neighbours)
-        knclassifier.fit(X_train, y_train)
+        knclassifier = KNeighborsClassifier(n_neighbors=neighbours).fit(X_par, y_par)
         y_est = knclassifier.predict(X_val)
         y_est = np.rint(y_est)
         test_error_k.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])

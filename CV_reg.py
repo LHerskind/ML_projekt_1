@@ -1,80 +1,110 @@
-from sklearn.model_selection import train_test_split
-from sklearn import cross_validation
+from toolbox_02450 import feature_selector_lr, bmplot
+import sklearn.linear_model as lm
+import neurolab as nl
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn import cross_validation
+from scipy import stats
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
 
 
-def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
-    X_outer, y_outer = split_train_test(input_data, index_to_check)
+def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
+    X, y = split_train_test(input_matrix, index)
+    N, M = X.shape
+    K = outer_cross_number
+    # CV = model_selection.KFold(K,True)
 
-    N_outer, M_outer = X_outer.shape
+    neurons = 1
+    learning_goal = 25
+    max_epochs = 64
+    show_error_freq = 65
 
-    CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
+    CV = cross_validation.KFold(N, K, shuffle=True)
 
-    test_error = list()
-    P_plot = list()
-    k_outer = 0
-    for train_index_outer, test_index_outer in CV_outer:
-        X_par = X_outer[train_index_outer, :]
-        y_par = y_outer[train_index_outer]
-        X_val = X_outer[test_index_outer, :]
-        y_val = y_outer[test_index_outer]
+    Features = np.zeros((M, K))
+    Error_train = np.empty((K, 1))
+    Error_test = np.empty((K, 1))
+    Error_train_fs = np.empty((K, 1))
+    Error_test_fs = np.empty((K, 1))
+    Error_train_mean = np.empty((K, 1))
+    Error_test_mean = np.empty((K, 1))
+    Error_train_nn = np.empty((K, 1))
+    Error_test_nn = np.empty((K, 1))
+    k = 0
+    for train_index, test_index in CV:
+        X_train = X[train_index, :]
+        y_train = y[train_index]
+        X_test = X[test_index, :]
+        y_test = y[test_index]
+        internal_cross_validation = inner_cross_number
 
-        error_matrix = np.zeros(shape=(inner_cross_number, max_neighbours))
-        precision_matrix = np.zeros(shape=(inner_cross_number, max_neighbours))
+        Error_train_mean[k] = np.square(y_train - y_train.mean()).sum() / y_train.shape[0]
+        Error_test_mean[k] = np.square(y_test - y_test.mean()).sum() / y_test.shape[0]
 
-        CV_inner = cross_validation.KFold(len(X_par), inner_cross_number, shuffle=True)
+        m = lm.LinearRegression(fit_intercept=True).fit(X_train, y_train)
+        Error_train[k] = np.square(y_train - m.predict(X_train)).sum() / y_train.shape[0]
+        Error_test[k] = np.square(y_test - m.predict(X_test)).sum() / y_test.shape[0]
+        textout = ''
+        selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation, display=textout)
 
-        k = 0
-        for train_index_inner, test_index_inner in CV_inner:
-            print('Crossvalidation fold: {0}/{1}'.format(k + 1, inner_cross_number))
+        Features[selected_features, k] = 1
+        # .. alternatively you could use module sklearn.feature_selection
+        if len(selected_features) is 0:
+            print('No features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).')
+        else:
+            m = lm.LinearRegression(fit_intercept=True).fit(X_train[:, selected_features], y_train)
+            Error_train_fs[k] = np.square(y_train - m.predict(X_train[:, selected_features])).sum() / y_train.shape[0]
+            Error_test_fs[k] = np.square(y_test - m.predict(X_test[:, selected_features])).sum() / y_test.shape[0]
 
-            X_train = X_par[train_index_inner, :]
-            y_train = y_par[train_index_inner]
-            X_test = X_par[test_index_inner, :]
-            y_test = y_par[test_index_inner]
-            size = X_train.shape[0]
+            y_train_2 = np.asmatrix([[x] for x in y_train])
+            y_test_2 = np.asmatrix([[x] for x in y_test])
+            ann = nl.net.newff([[-3, 3]] * M, [neurons, 1], [nl.trans.TanSig(), nl.trans.PureLin()])
 
-            for i in range(max_neighbours):
-                knclassifier = KNeighborsClassifier(n_neighbors=i + 1)
-                knclassifier.fit(X_train, y_train)
-                error_matrix[k][i] = np.square(y_test - knclassifier.predict(X_test)).sum() / y_test.shape[0]
-                precision_matrix[k][i] = 100 * np.sum(y_test.ravel() != knclassifier.predict(X_test).ravel()) / y_test.shape[0]
-            k += 1
+            ann.train(X_train, y_train_2, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
+            y_est_train = ann.sim(X_train)
+            y_est_test = ann.sim(X_test)
 
-            # Generalization error
+            Error_train_nn[k] = np.square(y_est_train - y_train_2).sum() / y_train.shape[0]
+            Error_test_nn[k] = np.square(y_est_test - y_test_2).sum() / y_test.shape[0]
 
-        listMean = list()
-        for i in range(max_neighbours):
-            listMean.append(np.mean(error_matrix[:, i]))
-        P_plot.append(listMean)
+        print('Cross validation fold {0}/{1}'.format(k + 1, K))
+        print('Features no: {0}\n'.format(selected_features.size))
 
-        index = listMean.index(np.min(listMean))
-        print('Optimal amount of neighbours: {0}'.format(index + 1))
-        knclassifier = KNeighborsClassifier(n_neighbors=index + 1)
-        knclassifier.fit(X_par, y_par)
-        y_est = knclassifier.predict(X_val)
-        y_est = np.rint(y_est)
-        test_error.append(np.square(y_est - y_val).sum().astype(float) / y_test.shape[0])
-        print('Test error: {0}'.format(test_error[k_outer]))
-        k_outer += 1
+        k += 1
 
-    print('Mean-square error: {0}'.format(np.mean(test_error)))
-
-    print_matrix = np.zeros(shape=max_neighbours)
-    for l in P_plot:
-        print_matrix += l
-    print_matrix /= len(P_plot)
+    print('Feature_select vs. ANN:')
+    significant_differnece(Error_1=Error_test_fs, Error_2=Error_test_nn, K=K)
+    print('Mean vs. ANN:')
+    significant_differnece(Error_1=Error_test_mean, Error_2=Error_test_nn, K=K)
+    print('Linear vs. ANN:')
+    significant_differnece(Error_1=Error_test, Error_2=Error_test_nn, K=K)
 
     figure()
-    plt.plot(range(1, max_neighbours + 1), print_matrix)
-    plt.xlabel('Number of neighbours')
-    plt.ylabel('Mean Squared Error')
-    plt.title('Error rate to neighbours')
+    plt.boxplot(np.bmat('Error_test_nn, Error_test_fs, Error_test, Error_train_mean'))
+    title('Normalized input/output')
+    xlabel('ANN vs. Feature_selected vs. clean vs. mean')
+    ylabel('Mean squared error')
 
     show()
+
+
+def significant_differnece(Error_1, Error_2, K):
+    Error_1 = np.asarray(Error_1)
+    Error_2 = np.asarray(Error_2)
+
+    z = (Error_1 - Error_2)
+    zb = z.mean()
+    nu = K - 1
+    sig = (z - zb).std() / (K - 1)
+    alpha = 0.05
+
+    zL = zb + sig * stats.t.ppf(alpha / 2, nu)
+    zH = zb + sig * stats.t.ppf(1 - alpha / 2, nu)
+
+    if zL <= 0 and zH >= 0:
+        print('Classifiers are not significantly different')
+    else:
+        print('Classifiers are significantly different.')
 
 
 def split_train_test(input_matrix, index):

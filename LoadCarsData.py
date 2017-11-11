@@ -3,6 +3,7 @@ import CV_bestnb_clas
 import CV_bestnn_classification
 import CV_bestnn_reg
 import CV_big_shit
+import CV_reg
 import neurolab as nl
 import numpy as np
 # from sklearn import model_selection
@@ -163,6 +164,7 @@ def split_train_test(input_matrix, index):
     print(X.shape)
     return X, y
 
+
 # https://github.com/zammitjames/neurolab/issues/8
 def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     X, y = split_train_test(input_matrix, index)
@@ -170,7 +172,7 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     K = outer_cross_number
     # CV = model_selection.KFold(K,True)
 
-    neurons = 5
+    neurons = 50
     learning_goal = 10
     max_epochs = 64 * 5
     show_error_freq = 65
@@ -227,8 +229,6 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
             ann.train(X_train, y_train_2, goal=learning_goal, epochs=max_epochs, show=show_error_freq)
             y_est_train = ann.sim(X_train)
             y_est_test = ann.sim(X_test)
-            #print('A2:', y_est_train)
-            #print('B:', y_train_2)
 
             Error_train_nn[k] = np.square(y_est_train - y_train_2).sum() / y_train.shape[0]
             Error_test_nn[k] = np.square(y_est_test - y_test_2).sum() / y_test.shape[0]
@@ -268,12 +268,12 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum() - Error_train_nn.sum()) / Error_train_nofeatures.sum()))
     print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum() - Error_test_nn.sum()) / Error_test_nofeatures.sum()))
 
-    figure(k)
+    '''figure(k)
     subplot(1, 3, 2)
     bmplot(attributeNamesShorter, range(1, Features.shape[1] + 1), -Features)
     clim(-1.5, 0)
     xlabel('Crossvalidation fold')
-    ylabel('Attribute')
+    ylabel('Attribute')'''
 
     # Inspect selected feature coefficients effect on the entire dataset and
     # plot the fitted model residual error as function of each attribute to
@@ -285,7 +285,6 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
         print('\nNo features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).')
     else:
         m = lm.LinearRegression(fit_intercept=True).fit(X[:, ff], y)
-
         y_est = m.predict(X[:, ff])
         residual = y - y_est
 
@@ -301,34 +300,35 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
 
 
 def fix_data(input_matrix):
-    datamatrix[7] = datamatrix[7] - 1
+    datamatrix[:, 7] = datamatrix[:, 7] - 1
 
 
 if __name__ == '__main__':
     is3D = True
     file = "Cars-file-nice.txt";
     datamatrix = load_from_file(file)
-    fix_data(datamatrix)
+    # fix_data(datamatrix)
     # create_plots(datamatrix)
 
     # summary_statistics(datamatrix)
 
-    # if(made1_to_k):
-    #    datamatrix_k = convert_using_1_to_k(datamatrix)
+    # datamatrix_k = convert_using_1_to_k(datamatrix)
 
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
     # create_plots(datamatrix_std, datamatrix_std)
     # svd_graph(datamatrix_std, made1_to_k)
-    linear_reg(datamatrix_std, 0, 10, 10)
+    # linear_reg(datamatrix_std, 0, 5, 5)
     # two_layered_cross_validation(datamatrix, 7, 10, 0)
     # find_best_K(datamatrix, 7)
     # print(find_best_ANN(datamatrix, 7))
 
     # create_plots(datamatrix, datamatrix_std)
     # svd_graph(datamatrix_std, is3D)
+    #CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
+    CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
+
 
     # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 5, 5)
-    CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
-    # CV_bestnn_reg.two_layer_cross_validation(datamatrix, 0, 5, 5)
+    # CV_big_shit.two_layer_cross_validation(datamatrix_std, 7, 10, 10)

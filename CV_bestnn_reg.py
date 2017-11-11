@@ -9,10 +9,10 @@ import neurolab as nl
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
 
-    max_hidden = 50
-    learning_goal = 0.02
-    max_epochs = 64 * 10
-    show_error_freq = 1000
+    max_hidden = 20
+    learning_goal = 25
+    max_epochs = 64
+    show_error_freq = 65
 
     N_outer, M_outer = X_outer.shape
 
@@ -80,7 +80,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     figure()
     plt.plot(range(1, max_hidden + 1), print_matrix)
     plt.xlabel('Number of hidden neurons')
-    plt.ylabel('Error rate %')
+    plt.ylabel('Mean squared error')
     plt.title('Error rate to neurons')
 
     show()
