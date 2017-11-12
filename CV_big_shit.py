@@ -13,6 +13,7 @@ from scipy import stats
 
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
+    y_outer = y_outer - 1
 
     N_outer, M_outer = X_outer.shape
 
@@ -67,8 +68,8 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
                 best_model_error = error_2
 
             nb_classifier = MultinomialNB().fit(X_train, y_train)
-            y_est = nb_classifier.predict_proba(X_test)
-            y_est = np.argmax(y_est, 1) + 1
+            y_est_prob = nb_classifier.predict_proba(X_test)
+            y_est = np.argmax(y_est_prob, 1)
 
             error_2 = 100 * np.sum(y_test != y_est) / y_test.shape[0]
             test_error_nb.append(error_2)
@@ -108,7 +109,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
         y_est_prob = nb_classifier.predict_proba(X_val)
         # y_est = nb_classifier.predict_proba(X_val)
         print('A:', y_est_prob)
-        y_est = np.argmax(y_est_prob, 1) + 1
+        y_est = np.argmax(y_est_prob, 1)
         print('C:', y_est)
         print('D:', np.rint(y_val))
         test_error_nb.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
