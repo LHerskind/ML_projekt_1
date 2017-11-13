@@ -67,6 +67,16 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
             Error_train_nn[k] = np.square(y_est_train - y_train_2).sum() / y_train.shape[0]
             Error_test_nn[k] = np.square(y_est_test - y_test_2).sum() / y_test.shape[0]
 
+            figure()
+            subplot(2, 1, 1)
+            plot(y_train_2, y_est_train, '.')
+            subplot(2,1,2)
+            plot(y_test_2, y_est_test, '.')
+            xlabel('MPG (true, normalized)');
+            ylabel('MPG (estimated, normalized)');
+
+
+
         print('Cross validation fold {0}/{1}'.format(k + 1, K))
         print('Features no: {0}\n'.format(selected_features.size))
 
@@ -84,6 +94,9 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     title('Normalized input/output')
     xlabel('ANN vs. Feature_selected vs. clean vs. mean')
     ylabel('Mean squared error')
+
+
+
 
     show()
 

@@ -10,6 +10,7 @@ from sklearn.naive_bayes import MultinomialNB
 import sklearn.linear_model as lm
 from scipy import stats
 from imblearn.over_sampling import RandomOverSampler
+from toolbox_02450 import dbplotf
 
 attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
 
@@ -31,7 +32,10 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     test_error_nb = list()
     test_error_k = list()
     test_error_nn = list()
+    test_error_mc = list()
 
+    bestnn = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(11,), random_state=1)
+    bestnn_error = 100000000
     best_model = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(11,), random_state=1)
     best_model_error = 100000000000
 
@@ -92,9 +96,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             error_2 = 100 * np.sum(y_test.ravel() != clf.predict(X_test).ravel()) / y_test.shape[0]
             test_error_nn.append(error_2)
 
-            if error_2 < best_model_error:
-                #best_model = clf
-                best_model_error = error_2
+            if error_2 < bestnn_error:
+                bestnn = clf
+                bestnn_error = error_2
 
             knclassifier = KNeighborsClassifier(n_neighbors=neighbours).fit(X_train, y_train)
             error_2 = 100 * np.sum(y_test.ravel() != knclassifier.predict(X_test)) / y_test.shape[0]
@@ -103,6 +107,11 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             if error_2 < best_model_error:
                 #best_model = knclassifier
                 best_model_error = error_2
+
+            counts = np.bincount(y_train.astype(int))
+            mostCommon = np.argmax(counts)
+            error_2 = 100 *np.sum(y_test.ravel() != mostCommon) / y_test.shape[0]
+            test_error_mc.append(error_2)
 
             k += 1
 
@@ -134,11 +143,17 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
         y_est = np.rint(y_est)
         test_error_k.append(100 * np.sum(y_est.ravel() != y_val.ravel()) / y_test.shape[0])
 
+        counts = np.bincount(y_par.astype(int))
+        mostCommon = np.argmax(counts)
+        error_2 = 100 * np.sum(y_val.ravel() != mostCommon) / y_val.shape[0]
+        test_error_mc.append(error_2)
+
         print('Test error log: {0}'.format(test_error_log[k_outer]))
         print('Test error dt: {0}'.format(test_error_dt[k_outer]))
         print('Test error nb: {0}'.format(test_error_nb[k_outer]))
         print('Test error k: {0}'.format(test_error_k[k_outer]))
         print('Test error nn: {0}'.format(test_error_nn[k_outer]))
+        print('Test error mc: {0}'.format(test_error_mc[k_outer]))
         k_outer += 1
 
     print('Mean-square error log: {0}'.format(np.mean(test_error_log)))
@@ -146,23 +161,25 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     print('Mean-square error nb: {0}'.format(np.mean(test_error_nb)))
     print('Mean-square error k: {0}'.format(np.mean(test_error_k)))
     print('Mean-square error nn: {0}'.format(np.mean(test_error_nn)))
+    print('Mean-square error mc: {0}'.format(np.mean(test_error_mc)))
     print(best_model)
 
     out = tree.export_graphviz(best_model, out_file='tree_cars.gvz', feature_names=attributeNames[0:7])
-
 
     to_plot_log = [[x] for x in test_error_log]
     to_plot_dt = [[x] for x in test_error_dt]
     to_plot_nb = [[x] for x in test_error_nb]
     to_plot_k = [[x] for x in test_error_k]
     to_plot_nn = [[x] for x in test_error_nn]
+    to_plot_mc = [[x] for x in test_error_mc]
 
-    significant_differnece(test_error_dt, test_error_log)
+    significant_differnece(test_error_dt, test_error_k)
 
-    figure()
-    plt.boxplot(np.bmat('to_plot_log, to_plot_dt, to_plot_nb, to_plot_k, to_plot_nn'))
-    xlabel('Log_Reg vs. DT vs. NB vs. K-neighbour vs. NN')
+    figure(1)
+    plt.boxplot(np.bmat('to_plot_log, to_plot_dt, to_plot_nb, to_plot_k, to_plot_nn, to_plot_mc'))
+    xlabel('Log_Reg vs. DT vs. NB vs. K-neighbour vs. NN vs. Most common')
     ylabel('Cross-validation error [%]')
+
 
     show()
 
