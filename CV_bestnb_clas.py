@@ -4,12 +4,15 @@ import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
+from imblearn.over_sampling import RandomOverSampler
 
 
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
 
-    nb_alpha = 10
+    ros = RandomOverSampler(random_state=0)
+
+    nb_alpha = 1.0
 
     max_hidden = 40
 
@@ -23,6 +26,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     for train_index_outer, test_index_outer in CV_outer:
         X_par = X_outer[train_index_outer, :]
         y_par = y_outer[train_index_outer]
+
+        X_par, y_par = ros.fit_sample(X_par,y_par)
+
         X_val = X_outer[test_index_outer, :]
         y_val = y_outer[test_index_outer]
 

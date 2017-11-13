@@ -9,16 +9,20 @@ from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show
 from sklearn.naive_bayes import MultinomialNB
 import sklearn.linear_model as lm
 from scipy import stats
+from imblearn.over_sampling import RandomOverSampler
 
+attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
 
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
     y_outer = y_outer - 1
 
+    ros = RandomOverSampler(random_state=0)
+
     N_outer, M_outer = X_outer.shape
 
-    neighbours = 5
-    hidden_neurons = 11
+    neighbours = 1
+    hidden_neurons = 31
 
     CV_outer = cross_validation.KFold(N_outer, outer_cross_number, shuffle=True)
 
@@ -35,6 +39,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     for train_index_outer, test_index_outer in CV_outer:
         X_par = X_outer[train_index_outer, :]
         y_par = y_outer[train_index_outer]
+
+        X_par, y_par = ros.fit_sample(X_par, y_par)
+
         X_val = X_outer[test_index_outer, :]
         y_val = y_outer[test_index_outer]
 
@@ -48,6 +55,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
 
             X_train = X_par[train_index_inner, :]
             y_train = y_par[train_index_inner]
+
+            X_train, y_train = ros.fit_sample(X_train, y_train)
+
             X_test = X_par[test_index_inner, :]
             y_test = y_par[test_index_inner]
 
@@ -56,7 +66,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_log.append(error_2)
 
             if error_2 < best_model_error:
-                best_model = log
+                #best_model = log
                 best_model_error = error_2
 
             dt = tree.DecisionTreeClassifier().fit(X_train, y_train)
@@ -75,7 +85,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_nb.append(error_2)
 
             if error_2 < best_model_error:
-                best_model = nb_classifier
+                #best_model = nb_classifier
                 best_model_error = error_2
 
             clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1).fit(X_train, y_train)
@@ -83,7 +93,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_nn.append(error_2)
 
             if error_2 < best_model_error:
-                best_model = clf
+                #best_model = clf
                 best_model_error = error_2
 
             knclassifier = KNeighborsClassifier(n_neighbors=neighbours).fit(X_train, y_train)
@@ -91,7 +101,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_k.append(error_2)
 
             if error_2 < best_model_error:
-                best_model = knclassifier
+                #best_model = knclassifier
                 best_model_error = error_2
 
             k += 1
@@ -137,6 +147,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     print('Mean-square error k: {0}'.format(np.mean(test_error_k)))
     print('Mean-square error nn: {0}'.format(np.mean(test_error_nn)))
     print(best_model)
+
+    out = tree.export_graphviz(best_model, out_file='tree_cars.gvz', feature_names=attributeNames[0:7])
+
 
     to_plot_log = [[x] for x in test_error_log]
     to_plot_dt = [[x] for x in test_error_dt]

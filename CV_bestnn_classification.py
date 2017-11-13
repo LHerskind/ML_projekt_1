@@ -4,10 +4,13 @@ import numpy as np
 import sklearn.neural_network as nn
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
+from imblearn.over_sampling import RandomOverSampler
 
 
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
+
+    ros = RandomOverSampler(random_state=0)
 
     max_hidden = 40
 
@@ -21,6 +24,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     for train_index_outer, test_index_outer in CV_outer:
         X_par = X_outer[train_index_outer, :]
         y_par = y_outer[train_index_outer]
+
+        X_par, y_par = ros.fit_sample(X_par,y_par)
+
         X_val = X_outer[test_index_outer, :]
         y_val = y_outer[test_index_outer]
 
@@ -34,6 +40,9 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
 
             X_train = X_par[train_index_inner, :]
             y_train = y_par[train_index_inner]
+
+            X_train, y_train = ros.fit_sample(X_train, y_train)
+
             X_test = X_par[test_index_inner, :]
             y_test = y_par[test_index_inner]
             size = X_train.shape[0]

@@ -19,6 +19,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from toolbox_02450 import feature_selector_lr, bmplot
+from sklearn import tree
+
 
 # from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
@@ -302,6 +304,18 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
 def fix_data(input_matrix):
     datamatrix[:, 7] = datamatrix[:, 7] - 1
 
+def create_decision_tree(input_matrix, index):
+    X, y = split_train_test(input_matrix, index)
+    N, M = X.shape
+
+    # Fit regression tree classifier, Gini split criterion, pruning enabled
+    dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=100)
+    dtc = dtc.fit(X, y)
+
+    # Export tree graph for visualization purposes:
+    # (note: you can use i.e. Graphviz application to visualize the file)
+    out = tree.export_graphviz(dtc, out_file='tree_cars.gvz', feature_names=attributeNames[0:7])
+
 
 if __name__ == '__main__':
     is3D = True
@@ -324,11 +338,12 @@ if __name__ == '__main__':
 
     # create_plots(datamatrix, datamatrix_std)
     # svd_graph(datamatrix_std, is3D)
-    #CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
-    CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
+    # CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
+    # CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
 
 
     # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 5, 5)
-    # CV_big_shit.two_layer_cross_validation(datamatrix_std, 7, 10, 10)
+    CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
+    # create_decision_tree(datamatrix,7)
