@@ -15,8 +15,7 @@ def Agglomerative(input_data, index_to_check):
 
     X, y = split_train_test(input_data, index_to_check)
 
-    X = StandardScaler().fit_transform(X)
-
+    #X = StandardScaler().fit_transform(X)
 
     X, y = ros.fit_sample(X, y)
 
@@ -33,7 +32,7 @@ def Agglomerative(input_data, index_to_check):
     Z = linkage(X, method=Method, metric=Metric)
 
     # Compute and display clusters by thresholding the dendrogram
-    Maxclust = 4
+    Maxclust = 8
     cls = fcluster(Z, criterion='maxclust', t=Maxclust)
     figure(1)
     clusterplot(datamatrix_projected, cls.reshape(cls.shape[0], 1), y=y)

@@ -20,11 +20,11 @@ def Evaluate(input_data, index_to_check):
     ros = RandomOverSampler(random_state=0)
     X, y = ros.fit_sample(X, y)
 
-    #    X = StandardScaler().fit_transform(X)
+    # X = StandardScaler().fit_transform(X)
 
     N, M = np.shape(X)
 
-    split_index = int(X.shape[0] * 0.6)
+    split_index = int(X.shape[0] * 0.7)
     print(split_index)
     X_train = X[:split_index, :]
     X_test = X[split_index:, :]
