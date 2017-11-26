@@ -28,7 +28,8 @@ def CV_gauss(input_data, index_to_check):
     reps = 10  # number of fits with different initalizations, best result will be kept
 
     # Allocate variables
-
+    BIC = np.zeros((T,))
+    AIC = np.zeros((T,))
     CVE = np.zeros((T,))
 
     # K-fold crossvalidation
@@ -39,6 +40,9 @@ def CV_gauss(input_data, index_to_check):
 
         # Fit Gaussian mixture model
         gmm = GaussianMixture(n_components=K, covariance_type=covar_type, n_init=reps).fit(X)
+
+        BIC[t, ] = gmm.bic(X)
+        AIC[t, ] = gmm.aic(X)
 
         # For each crossvalidation fold
         for train_index, test_index in CV.split(X):
@@ -55,12 +59,13 @@ def CV_gauss(input_data, index_to_check):
             # Plot results
 
     figure(1)
-    plot(KRange, np.log(2 * CVE), '-ok')
-    legend(['Crossvalidation'])
+    plot(KRange, BIC, '-*b')
+    plot(KRange, AIC, '-xr')
+    plot(KRange, 2 * CVE, '-ok')
+    legend(['BIC', 'AIC', 'Crossvalidation'])
     xlabel('K')
 
     show()
-
 
 
 def split_train_test(input_matrix, index):

@@ -29,7 +29,7 @@ def Agglomerative(input_data, index_to_check):
     Z = linkage(X, method=Method, metric=Metric)
 
     # Compute and display clusters by thresholding the dendrogram
-    Maxclust = 4
+    Maxclust = 15
     cls = fcluster(Z, criterion='maxclust', t=Maxclust)
     figure(1)
     clusterplot(datamatrix_projected, cls.reshape(cls.shape[0], 1), y=y)
