@@ -3,16 +3,21 @@ import numpy as np
 from scipy.io import loadmat
 from sklearn.mixture import GaussianMixture
 from sklearn import model_selection
+from imblearn.over_sampling import RandomOverSampler
 
 # Load Matlab data file and extract variables of interest
 def CV_gauss(input_data, index_to_check):
     X, y = split_train_test(input_data, index_to_check)
 
+    ros = RandomOverSampler(random_state=0)
+
+    X, y = ros.fit_sample(X, y)
+
     N, M = X.shape
 
 
     # Range of K's to try
-    KRange = range(1, 10)
+    KRange = range(1, 15)
     T = len(KRange)
 
     covar_type = 'diag'  # you can try out 'diag' as well
