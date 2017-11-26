@@ -1,26 +1,22 @@
-# exercise 11.1.5
 from matplotlib.pyplot import figure, plot, legend, xlabel, show
 import numpy as np
 from scipy.io import loadmat
 from sklearn.mixture import GaussianMixture
 from sklearn import model_selection
 
-attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
-
-
 # Load Matlab data file and extract variables of interest
-def CV_GMM(input_data, index_to_check):
+def CV_gauss(input_data, index_to_check):
     X, y = split_train_test(input_data, index_to_check)
 
     N, M = X.shape
-    C = len(classNames)
+
 
     # Range of K's to try
     KRange = range(1, 11)
     T = len(KRange)
 
-    covar_type = 'full'  # you can try out 'diag' as well
-    reps = 3  # number of fits with different initalizations, best result will be kept
+    covar_type = 'diag'  # you can try out 'diag' as well
+    reps = 5  # number of fits with different initalizations, best result will be kept
 
     # Allocate variables
 
@@ -51,7 +47,12 @@ def CV_GMM(input_data, index_to_check):
 
     figure(1);
     plot(KRange, 2 * CVE, '-ok')
-    legend(['BIC', 'AIC', 'Crossvalidation'])
+    legend(['Crossvalidation'])
     xlabel('K')
     show()
 
+def split_train_test(input_matrix, index):
+    y = input_matrix[:, index]
+    X = np.delete(input_matrix, index, axis=1)
+    print(X.shape)
+    return X, y
