@@ -3,6 +3,8 @@ import numpy as np
 from toolbox_02450 import clusterval
 from sklearn.mixture import GaussianMixture
 from sklearn import metrics
+from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import RandomOverSampler
 
 
 def split_train_test(input_matrix, index):
@@ -15,9 +17,15 @@ def split_train_test(input_matrix, index):
 def Evaluate(input_data, index_to_check):
     X, y = split_train_test(input_data, index_to_check)
 
+    ros = RandomOverSampler(random_state=0)
+    X, y = ros.fit_sample(X, y)
+
+    #    X = StandardScaler().fit_transform(X)
+
     N, M = np.shape(X)
 
-    split_index = 314
+    split_index = int(X.shape[0] * 0.6)
+    print(split_index)
     X_train = X[:split_index, :]
     X_test = X[split_index:, :]
     y_test = y[split_index:]
@@ -33,6 +41,7 @@ def Evaluate(input_data, index_to_check):
     for k in range(K):
         cls = GaussianMixture(n_components=K, covariance_type="full", n_init=10).fit(X_train)
         Rand[k], Jaccard[k], NMI[k] = clusterval(y_test.ravel(), cls.predict(X_test))
+        print(Rand[k], Jaccard[k])
 
     # Plot results:
 
