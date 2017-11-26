@@ -4,6 +4,11 @@ from scipy.io import loadmat
 from sklearn.mixture import GaussianMixture
 from sklearn import model_selection
 from imblearn.over_sampling import RandomOverSampler
+from toolbox_02450 import clusterplot
+import numpy as np
+from matplotlib.pyplot import figure, subplot, plot, hist, title, show
+from sklearn.mixture import GaussianMixture
+
 
 # Load Matlab data file and extract variables of interest
 def CV_gauss(input_data, index_to_check):
@@ -15,13 +20,12 @@ def CV_gauss(input_data, index_to_check):
 
     N, M = X.shape
 
-
     # Range of K's to try
     KRange = range(1, 15)
     T = len(KRange)
 
-    covar_type = 'diag'  # you can try out 'diag' as well
-    reps = 5  # number of fits with different initalizations, best result will be kept
+    covar_type = 'full'  # you can try out 'diag' as well
+    reps = 10  # number of fits with different initalizations, best result will be kept
 
     # Allocate variables
 
@@ -48,13 +52,15 @@ def CV_gauss(input_data, index_to_check):
             # compute negative log likelihood of X_test
             CVE[t] += -gmm.score_samples(X_test).sum()
 
-    # Plot results
+            # Plot results
 
-    figure(1);
-    plot(KRange, 2 * CVE, '-ok')
+    figure(1)
+    plot(KRange, np.log(2 * CVE), '-ok')
     legend(['Crossvalidation'])
     xlabel('K')
+
     show()
+
 
 
 def split_train_test(input_matrix, index):

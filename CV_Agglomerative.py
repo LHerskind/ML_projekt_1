@@ -5,6 +5,7 @@ from toolbox_02450 import clusterplot
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 import numpy as np
 from imblearn.over_sampling import RandomOverSampler
+from scipy.linalg import svd
 
 
 def Agglomerative(input_data, index_to_check):
@@ -15,21 +16,23 @@ def Agglomerative(input_data, index_to_check):
 
     X, y = ros.fit_sample(X, y)
 
+    U, S, V = svd(X, full_matrices=False)
+
+    datamatrix_projected = np.dot(X, V[:2].T)
+
     N, M = X.shape
 
     # Perform hierarchical/agglomerative clustering on data matrix
-    Method = 'complete'
-    Metric = 'euclidean'
+    Method = 'average'
+    Metric = 'cityblock'
 
     Z = linkage(X, method=Method, metric=Metric)
 
     # Compute and display clusters by thresholding the dendrogram
-    Maxclust = 3
+    Maxclust = 4
     cls = fcluster(Z, criterion='maxclust', t=Maxclust)
     figure(1)
-    clusterplot(X, cls.reshape(cls.shape[0], 1), y=y)
-    sum = np.sum(cls != np.asarray(y))
-    print(sum)
+    clusterplot(datamatrix_projected, cls.reshape(cls.shape[0], 1), y=y)
 
     # Display dendrogram
     max_display_levels = 6

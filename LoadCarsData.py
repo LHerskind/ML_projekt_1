@@ -6,6 +6,7 @@ import CV_big_shit
 import CV_reg
 import CV_GMM
 import CV_Agglomerative
+import Outlier_11_4_1
 import neurolab as nl
 import numpy as np
 # from sklearn import model_selection
@@ -22,7 +23,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from toolbox_02450 import feature_selector_lr, bmplot
 from sklearn import tree
-
 
 # from matplotlib.pyplot import figure, plot, title, xlabel, ylabel, show
 
@@ -306,6 +306,7 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
 def fix_data(input_matrix):
     datamatrix[:, 7] = datamatrix[:, 7] - 1
 
+
 def create_decision_tree(input_matrix, index):
     X, y = split_train_test(input_matrix, index)
     N, M = X.shape
@@ -330,7 +331,7 @@ if __name__ == '__main__':
 
     # datamatrix_k = convert_using_1_to_k(datamatrix)
 
-    datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
+    # datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
     # create_plots(datamatrix_std, datamatrix_std)
     # svd_graph(datamatrix_std, made1_to_k)
     # linear_reg(datamatrix_std, 0, 5, 5)
@@ -341,16 +342,14 @@ if __name__ == '__main__':
     # create_plots(datamatrix, datamatrix_std)
     # svd_graph(datamatrix_std, is3D)
     # CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
-    #CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
-
-    CV_GMM.CV_gauss(datamatrix, 7)
-
-    CV_Agglomerative.Agglomerative(datamatrix, 7)
+    # CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
 
     # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 10, 10)
-    #CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
+    # CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # create_decision_tree(datamatrix,7)
 
-
+    # CV_GMM.CV_gauss(datamatrix, 7)
+    # CV_Agglomerative.Agglomerative(datamatrix, 7)
+    Outlier_11_4_1.Outlier(datamatrix, 7)
