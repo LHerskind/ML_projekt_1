@@ -12,7 +12,7 @@ def CV_gauss(input_data, index_to_check):
 
 
     # Range of K's to try
-    KRange = range(1, 11)
+    KRange = range(1, 10)
     T = len(KRange)
 
     covar_type = 'diag'  # you can try out 'diag' as well
@@ -50,6 +50,7 @@ def CV_gauss(input_data, index_to_check):
     legend(['Crossvalidation'])
     xlabel('K')
     show()
+
 
 def split_train_test(input_matrix, index):
     y = input_matrix[:, index]

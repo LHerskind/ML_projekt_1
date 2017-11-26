@@ -11,8 +11,13 @@ import sklearn.linear_model as lm
 from scipy import stats
 from imblearn.over_sampling import RandomOverSampler
 from toolbox_02450 import dbplotf
+from toolbox_02450 import rocplot, confmatplot
+from toolbox_02450 import dbplot, dbprobplot
+from bin_classifier_ensemble import BinClassifierEnsemble
+from scipy.linalg import svd
 
 attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
+
 
 def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, inner_cross_number):
     X_outer, y_outer = split_train_test(input_data, index_to_check)
@@ -33,6 +38,8 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     test_error_k = list()
     test_error_nn = list()
     test_error_mc = list()
+
+    best_log = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(11,), random_state=1)
 
     bestnn = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(11,), random_state=1)
     bestnn_error = 100000000
@@ -70,7 +77,8 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_log.append(error_2)
 
             if error_2 < best_model_error:
-                #best_model = log
+                best_log = log
+                # best_model = log
                 best_model_error = error_2
 
             dt = tree.DecisionTreeClassifier().fit(X_train, y_train)
@@ -89,7 +97,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_nb.append(error_2)
 
             if error_2 < best_model_error:
-                #best_model = nb_classifier
+                # best_model = nb_classifier
                 best_model_error = error_2
 
             clf = nn.MLPClassifier(solver='lbfgs', alpha=1e-1, hidden_layer_sizes=(hidden_neurons,), random_state=1).fit(X_train, y_train)
@@ -105,12 +113,12 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
             test_error_k.append(error_2)
 
             if error_2 < best_model_error:
-                #best_model = knclassifier
+                # best_model = knclassifier
                 best_model_error = error_2
 
             counts = np.bincount(y_train.astype(int))
             mostCommon = np.argmax(counts)
-            error_2 = 100 *np.sum(y_test.ravel() != mostCommon) / y_test.shape[0]
+            error_2 = 100 * np.sum(y_test.ravel() != mostCommon) / y_test.shape[0]
             test_error_mc.append(error_2)
 
             k += 1
@@ -179,7 +187,6 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     plt.boxplot(np.bmat('to_plot_log, to_plot_dt, to_plot_nb, to_plot_k, to_plot_nn, to_plot_mc'))
     xlabel('Log_Reg vs. DT vs. NB vs. K-neighbour vs. NN vs. Most common')
     ylabel('Cross-validation error [%]')
-
 
     show()
 

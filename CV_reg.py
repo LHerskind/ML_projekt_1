@@ -6,6 +6,7 @@ from sklearn import cross_validation
 from scipy import stats
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
+from toolbox_02450 import dbplot, dbprobplot
 
 
 def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
@@ -13,6 +14,11 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
     N, M = X.shape
     K = outer_cross_number
     # CV = model_selection.KFold(K,True)
+
+    attributeNames = ['MPG', 'Cylinders', 'Displacment', 'Horsepower', 'Weight (lbs)', 'Acceleration (MPH)', 'Model year', 'Origin']
+    temp = attributeNames[index]
+    attributeNamesShorter = attributeNames
+    attributeNamesShorter.remove(temp)
 
     neurons = 1
     learning_goal = 25
@@ -81,6 +87,17 @@ def linear_reg(input_matrix, index, outer_cross_number, inner_cross_number):
         print('Features no: {0}\n'.format(selected_features.size))
 
         k += 1
+
+        figure(k)
+        subplot(1, 2, 1)
+        plot(range(1, len(loss_record)), loss_record[1:])
+        xlabel('Iteration')
+        ylabel('Squared error (crossvalidation)')
+
+        subplot(1, 3, 3)
+        bmplot(attributeNames, range(1, features_record.shape[1]), -features_record[:, 1:])
+        clim(-1.5, 0)
+        xlabel('Iteration')
 
     print('Feature_select vs. ANN:')
     significant_differnece(Error_1=Error_test_fs, Error_2=Error_test_nn, K=K)

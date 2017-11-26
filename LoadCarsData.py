@@ -5,6 +5,7 @@ import CV_bestnn_reg
 import CV_big_shit
 import CV_reg
 import CV_GMM
+import CV_Agglomerative
 import neurolab as nl
 import numpy as np
 # from sklearn import model_selection
@@ -342,7 +343,9 @@ if __name__ == '__main__':
     # CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
     #CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
 
-    CV_GMM.CV_gauss(datamatrix, 7)
+    #CV_GMM.CV_gauss(datamatrix, 7)
+
+    CV_Agglomerative.Agglomerative(datamatrix, 7)
 
     # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_BestK.two_layer_cross_validation_k_neighbours(datamatrix, 7, 10, 10)

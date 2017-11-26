@@ -10,7 +10,7 @@ def two_layer_cross_validation(input_data, index_to_check, outer_cross_number, i
     X_outer, y_outer = split_train_test(input_data, index_to_check)
 
     max_hidden = 20
-    learning_goal = 25
+    learning_goal = 100
     max_epochs = 64
     show_error_freq = 65
 
