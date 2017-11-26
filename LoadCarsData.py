@@ -4,6 +4,7 @@ import CV_bestnn_classification
 import CV_bestnn_reg
 import CV_big_shit
 import CV_reg
+import CV_GMM
 import neurolab as nl
 import numpy as np
 # from sklearn import model_selection
@@ -339,7 +340,7 @@ if __name__ == '__main__':
     # create_plots(datamatrix, datamatrix_std)
     # svd_graph(datamatrix_std, is3D)
     # CV_bestnn_reg.two_layer_cross_validation(datamatrix_std, 0, 10, 10)
-    CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
+    #CV_reg.linear_reg(datamatrix_std, 0, 10, 10)
 
 
     # CV_bestnb_clas.two_layer_cross_validation(datamatrix, 7, 10, 10)
@@ -347,3 +348,5 @@ if __name__ == '__main__':
     # CV_bestnn_classification.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # create_decision_tree(datamatrix,7)
+
+    CV_GMM(datamatrix)
