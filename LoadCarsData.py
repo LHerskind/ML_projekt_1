@@ -353,8 +353,8 @@ if __name__ == '__main__':
     # create_decision_tree(datamatrix,7)
 
     #CV_GMM.CV_gauss(datamatrix_std, 7)
-    #CV_Agglomerative.Agglomerative(datamatrix, 7)
-    Evaluation_cluster.Evaluate(datamatrix, 7)
+    CV_Agglomerative.Agglomerative(datamatrix, 7)
+    #Evaluation_cluster.Evaluate(datamatrix, 7)
 
 
     # Outlier_11_4_1.Outlier(datamatrix_std, 7)

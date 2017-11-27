@@ -11,13 +11,15 @@ from sklearn.preprocessing import StandardScaler
 
 def Agglomerative(input_data, index_to_check):
 
-    ros = RandomOverSampler(random_state=0)
+    #ros = RandomOverSampler(random_state=0)
 
     X, y = split_train_test(input_data, index_to_check)
 
+    X = input_data
+
     #X = StandardScaler().fit_transform(X)
 
-    X, y = ros.fit_sample(X, y)
+    #X, y = ros.fit_sample(X, y)
 
     U, S, V = svd(X, full_matrices=False)
 
@@ -32,7 +34,7 @@ def Agglomerative(input_data, index_to_check):
     Z = linkage(X, method=Method, metric=Metric)
 
     # Compute and display clusters by thresholding the dendrogram
-    Maxclust = 8
+    Maxclust = 4
     cls = fcluster(Z, criterion='maxclust', t=Maxclust)
     figure(1)
     clusterplot(datamatrix_projected, cls.reshape(cls.shape[0], 1), y=y)

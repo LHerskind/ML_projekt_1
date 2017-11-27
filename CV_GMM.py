@@ -12,20 +12,20 @@ from sklearn.mixture import GaussianMixture
 
 # Load Matlab data file and extract variables of interest
 def CV_gauss(input_data, index_to_check):
-    X, y = split_train_test(input_data, index_to_check)
+    X = input_data
 
-    ros = RandomOverSampler(random_state=0)
+    #ros = RandomOverSampler(random_state=0)
 
-    X, y = ros.fit_sample(X, y)
+    #X = ros.fit_sample(X)
 
     N, M = X.shape
 
     # Range of K's to try
-    KRange = range(1, 15)
+    KRange = range(1, 8)
     T = len(KRange)
 
     covar_type = 'full'  # you can try out 'diag' as well
-    reps = 10  # number of fits with different initalizations, best result will be kept
+    reps = 5  # number of fits with different initalizations, best result will be kept
 
     # Allocate variables
     BIC = np.zeros((T,))
