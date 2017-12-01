@@ -8,24 +8,24 @@ from scipy.linalg import svd
 from sklearn.preprocessing import StandardScaler
 from matplotlib.pyplot import figure, plot, subplot, title, xlabel, ylabel, show, clim
 
+
 def k_to_one(k_vector):
-    return np.argmax(k_vector,1)
+    return np.argmax(k_vector, 1)
 
 
 def Agglomerative(input_data, index_to_check):
+    # ros = RandomOverSampler(random_state=0)
 
-    #ros = RandomOverSampler(random_state=0)
+    # X, y = split_train_test(input_data, index_to_check)
 
-    #X, y = split_train_test(input_data, index_to_check)
-
-    y = k_to_one(input_data[:,7:10])
+    y = k_to_one(input_data[:, 7:10])
     print(y)
 
-    X = input_data
+    X = input_data [:, : 7]
 
-    #X = StandardScaler().fit_transform(X)
+    # X = StandardScaler().fit_transform(X)
 
-    #X, y = ros.fit_sample(X, y)
+    # X, y = ros.fit_sample(X, y)
 
     U, S, V = svd(X, full_matrices=False)
 
@@ -34,15 +34,14 @@ def Agglomerative(input_data, index_to_check):
     N, M = X.shape
 
     # Perform hierarchical/agglomerative clustering on data matrix
-    Maxclust = 4
+    Maxclust = 6
     Methods = ['average', 'complete', 'single']
-    Metrics = ['seuclidean', 'mahalanobis']
+    Metrics = ['mahalanobis', 'euclidean']
 
     fignumber = 1
     for i in Methods:
 
         for j in Metrics:
-
             Method = i
             Metric = j
 
@@ -51,17 +50,16 @@ def Agglomerative(input_data, index_to_check):
             # Compute and display clusters by thresholding the dendrogram
             cls = fcluster(Z, criterion='maxclust', t=Maxclust)
             figure(fignumber)
-            fignumber+=1
+            fignumber += 1
             clusterplot(datamatrix_projected, cls.reshape(cls.shape[0], 1), y=y)
             title(Method + ' ' + Metric)
 
 
             # Display dendrogram
-            #max_display_levels = 6
-            #figure(fignumber, figsize=(10, 4))
-            #fignumber+=1
-            #dendrogram(Z, truncate_mode='level', p=max_display_levels)
-
+            # max_display_levels = 6
+            # figure(fignumber, figsize=(10, 4))
+            # fignumber+=1
+            # dendrogram(Z, truncate_mode='level', p=max_display_levels)
 
     show()
 

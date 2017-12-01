@@ -16,8 +16,8 @@ def split_train_test(input_matrix, index):
 
 def Evaluate(input_data, index_to_check):
     X = input_data
-    y = np.argmax(input_data[:,7:10], 1)
 
+    y = np.argmax(input_data[:,7:10], 1)
     # X = StandardScaler().fit_transform(X)
 
     N, M = np.shape(X)

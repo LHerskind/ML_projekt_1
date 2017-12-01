@@ -11,19 +11,18 @@ from sklearn.mixture import GaussianMixture
 from scipy.linalg import svd
 
 
-
 # Load Matlab data file and extract variables of interest
 def CV_gauss(input_data, index_to_check):
     X = input_data
 
-    #ros = RandomOverSampler(random_state=0)
+    # ros = RandomOverSampler(random_state=0)
 
-    #X = ros.fit_sample(X)
+    # X = ros.fit_sample(X)
 
     N, M = X.shape
 
     # Range of K's to try
-    KRange = range(1, 6)
+    KRange = range(1, 8)
     T = len(KRange)
 
     covar_type = 'full'  # you can try out 'diag' as well
@@ -43,8 +42,8 @@ def CV_gauss(input_data, index_to_check):
         # Fit Gaussian mixture model
         gmm = GaussianMixture(n_components=K, covariance_type=covar_type, n_init=reps).fit(X)
 
-        BIC[t, ] = gmm.bic(X)
-        AIC[t, ] = gmm.aic(X)
+        BIC[t,] = gmm.bic(X)
+        AIC[t,] = gmm.aic(X)
 
         # For each crossvalidation fold
         for train_index, test_index in CV.split(X):
@@ -76,18 +75,20 @@ def split_train_test(input_matrix, index):
     print(X.shape)
     return X, y
 
+
 def draw_GMM(input_data):
-    X,y = split_train_test(input_data, 9)
+    X, y = split_train_test(input_data, 9)
+    y = np.argmax(input_data[:, 7:],1)
 
-    U, S, V = svd(input_data, full_matrices=False)
+    U, S, V = svd(input_data[:,:7], full_matrices=False)
 
-    X = np.dot(input_data, V.T)
+    X = np.dot(input_data[:,:7], V.T)
 
-    #X = input_data
+    # X = input_data
     N, M = X.shape
 
     # Number of clusters
-    K = 4
+    K = 6
     cov_type = 'diag'
     # type of covariance, you can try out 'diag' as well
     reps = 1
@@ -114,15 +115,14 @@ def draw_GMM(input_data):
 
     covs = new_covs
 
-
     # Plot results:
-    #figure(figsize=(14, 9))
-    #clusterplot(X, clusterid=cls, centroids=cds, y=y, covars=covs)
-    #show()
+    # figure(figsize=(14, 9))
+    # clusterplot(X, clusterid=cls, centroids=cds, y=y, covars=covs)
+    # show()
 
 
     ## In case the number of features != 2, then a subset of features most be plotted instead.
-    figure(figsize=(14,9))
-    idx = [0,3] # feature index, choose two features to use as x and y axis in the plot
-    clusterplot(X[:,idx], clusterid=cls, centroids=cds[:,idx], y=y, covars=covs[:,idx,:][:,:,idx])
+    figure(figsize=(14, 9))
+    idx = [0, 3]  # feature index, choose two features to use as x and y axis in the plot
+    clusterplot(X[:, idx], clusterid=cls, centroids=cds[:, idx], y=y, covars=covs[:, idx, :][:, :, idx])
     show()

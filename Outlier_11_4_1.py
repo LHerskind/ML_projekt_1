@@ -37,6 +37,8 @@ def Outlier(input_data, index_to_check):
     # Sort the densities
     i = (density.argsort(axis=0)).ravel()
     density = density[i].reshape(-1, )
+    print('The index of the lowest GKD estimator object: {0}'.format(i[0:5]))
+    print('The value of the lowest GKD estimator object: {0}'.format(density[0:5]))
 
     # Plot density estimate of outlier score
     figure(1)
@@ -58,6 +60,8 @@ def Outlier(input_data, index_to_check):
     # Sort the scores
     i = density.argsort()
     density = density[i]
+    print('The index of the lowest KNN 5 neighbours density object: {0}'.format(i[0:5]))
+    print('The value of the lowest KNN 5 neighbours density object: {0}'.format(density[0:5]))
 
     # Plot k-neighbor estimate of outlier score (distances)
     figure(3)
@@ -77,6 +81,9 @@ def Outlier(input_data, index_to_check):
     i_avg_rel = avg_rel_density.argsort()
     avg_rel_density = avg_rel_density[i_avg_rel]
 
+    print('The index of the lowest KNN average relative density object: {0}'.format(i_avg_rel[0:5]))
+    print('The value of the lowest KNN average relative density object: {0}'.format(avg_rel_density[0:5]))
+
     # Plot k-neighbor estimate of outlier score (distances)
     figure(5)
     bar(range(20), avg_rel_density[:20])
@@ -95,6 +102,8 @@ def Outlier(input_data, index_to_check):
     # Sort the scores
     i = score.argsort()
     score = score[i[::-1]]
+    print('The index of the highest KNN 5 neighbours outlier score: {0}'.format(i[0:5]))
+    print('The value of the highest KNN 5 neighbours outlier score: {0}'.format(score[0:5]))
 
     # Plot k-neighbor estimate of outlier score (distances)
     figure(7)

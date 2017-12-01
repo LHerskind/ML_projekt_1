@@ -354,11 +354,11 @@ if __name__ == '__main__':
     # CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # create_decision_tree(datamatrix,7)
 
-    #CV_GMM.CV_gauss(datamatrix_std_k, 7)
+    CV_GMM.CV_gauss(datamatrix_std_k, 7)
 
-    #CV_GMM.draw_GMM(datamatrix_k)
-    #CV_Agglomerative.Agglomerative(datamatrix_std_k, 7)
+    CV_GMM.draw_GMM(datamatrix_std_k)
+    CV_Agglomerative.Agglomerative(datamatrix_std_k, 7)
     #Evaluation_cluster.Evaluate(datamatrix_std_k, 7)
-    mining.mining(datamatrix_k)
+    #mining.mining(datamatrix_k)
 
     # Outlier_11_4_1.Outlier(datamatrix_std, 7)
