@@ -8,6 +8,8 @@ from toolbox_02450 import clusterplot
 import numpy as np
 from matplotlib.pyplot import figure, subplot, plot, hist, title, show
 from sklearn.mixture import GaussianMixture
+from scipy.linalg import svd
+
 
 
 # Load Matlab data file and extract variables of interest
@@ -21,7 +23,7 @@ def CV_gauss(input_data, index_to_check):
     N, M = X.shape
 
     # Range of K's to try
-    KRange = range(1, 8)
+    KRange = range(1, 6)
     T = len(KRange)
 
     covar_type = 'full'  # you can try out 'diag' as well
@@ -73,3 +75,54 @@ def split_train_test(input_matrix, index):
     X = np.delete(input_matrix, index, axis=1)
     print(X.shape)
     return X, y
+
+def draw_GMM(input_data):
+    X,y = split_train_test(input_data, 9)
+
+    U, S, V = svd(input_data, full_matrices=False)
+
+    X = np.dot(input_data, V.T)
+
+    #X = input_data
+    N, M = X.shape
+
+    # Number of clusters
+    K = 4
+    cov_type = 'diag'
+    # type of covariance, you can try out 'diag' as well
+    reps = 1
+    # number of fits with different initalizations, best result will be kept
+    # Fit Gaussian mixture model
+    gmm = GaussianMixture(n_components=K, covariance_type=cov_type, n_init=reps).fit(X)
+    cls = gmm.predict(X)
+    # extract cluster labels
+    cds = gmm.means_
+    # extract cluster centroids (means of gaussians)
+    covs = gmm.covariances_
+    # extract cluster shapes (covariances of gaussians)
+    if cov_type == 'diag':
+        new_covs = np.zeros([K, M, M])
+
+    count = 0
+    for elem in covs:
+        temp_m = np.zeros([M, M])
+        for i in range(len(elem)):
+            temp_m[i][i] = elem[i]
+
+        new_covs[count] = temp_m
+        count += 1
+
+    covs = new_covs
+
+
+    # Plot results:
+    #figure(figsize=(14, 9))
+    #clusterplot(X, clusterid=cls, centroids=cds, y=y, covars=covs)
+    #show()
+
+
+    ## In case the number of features != 2, then a subset of features most be plotted instead.
+    figure(figsize=(14,9))
+    idx = [0,3] # feature index, choose two features to use as x and y axis in the plot
+    clusterplot(X[:,idx], clusterid=cls, centroids=cds[:,idx], y=y, covars=covs[:,idx,:][:,:,idx])
+    show()

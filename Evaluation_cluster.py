@@ -15,16 +15,14 @@ def split_train_test(input_matrix, index):
 
 
 def Evaluate(input_data, index_to_check):
-    X, y = split_train_test(input_data, index_to_check)
-
-    ros = RandomOverSampler(random_state=0)
-    X, y = ros.fit_sample(X, y)
+    X = input_data
+    y = np.argmax(input_data[:,7:10], 1)
 
     # X = StandardScaler().fit_transform(X)
 
     N, M = np.shape(X)
 
-    split_index = int(X.shape[0] * 0.7)
+    split_index = int(X.shape[0] * 0.5)
     print(split_index)
     X_train = X[:split_index, :]
     X_test = X[split_index:, :]
@@ -39,9 +37,9 @@ def Evaluate(input_data, index_to_check):
     NMI = np.zeros((K,))
 
     for k in range(K):
-        cls = GaussianMixture(n_components=K, covariance_type="full", n_init=10).fit(X_train)
-        Rand[k], Jaccard[k], NMI[k] = clusterval(y_test.ravel(), cls.predict(X_test))
-        print(Rand[k], Jaccard[k])
+        cls = GaussianMixture(n_components=K, covariance_type="full", n_init=10).fit(X)
+        Rand[k], Jaccard[k], NMI[k] = clusterval(y.ravel(), cls.predict(X))
+        print(Rand[k], Jaccard[k], NMI[k])
 
     # Plot results:
 

@@ -8,6 +8,7 @@ import CV_GMM
 import CV_Agglomerative
 import Outlier_11_4_1
 import Evaluation_cluster
+import mining
 
 import neurolab as nl
 import numpy as np
@@ -331,9 +332,10 @@ if __name__ == '__main__':
 
     # summary_statistics(datamatrix)
 
-    # datamatrix_k = convert_using_1_to_k(datamatrix)
+    datamatrix_k = convert_using_1_to_k(datamatrix)
 
     datamatrix_std, cov, coff = std_cov_coff_matrices(datamatrix)
+    datamatrix_std_k, cov, coff = std_cov_coff_matrices(datamatrix_k)
     # create_plots(datamatrix_std, datamatrix_std)
     # svd_graph(datamatrix_std, made1_to_k)
     # linear_reg(datamatrix_std, 0, 5, 5)
@@ -352,9 +354,11 @@ if __name__ == '__main__':
     # CV_big_shit.two_layer_cross_validation(datamatrix, 7, 10, 10)
     # create_decision_tree(datamatrix,7)
 
-    #CV_GMM.CV_gauss(datamatrix_std, 7)
-    CV_Agglomerative.Agglomerative(datamatrix, 7)
-    #Evaluation_cluster.Evaluate(datamatrix, 7)
+    #CV_GMM.CV_gauss(datamatrix_std_k, 7)
 
+    #CV_GMM.draw_GMM(datamatrix_k)
+    #CV_Agglomerative.Agglomerative(datamatrix_std_k, 7)
+    #Evaluation_cluster.Evaluate(datamatrix_std_k, 7)
+    mining.mining(datamatrix_k)
 
     # Outlier_11_4_1.Outlier(datamatrix_std, 7)
