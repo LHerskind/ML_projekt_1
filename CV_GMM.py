@@ -57,8 +57,9 @@ def CV_gauss(input_data, index_to_check):
             # compute negative log likelihood of X_test
             CVE[t] += -gmm.score_samples(X_test).sum()
 
-            # Plot results
+    # Plot results
 
+    print(CVE)
     figure(1)
     plot(KRange, BIC, '-*b')
     plot(KRange, AIC, '-xr')
@@ -80,18 +81,18 @@ def draw_GMM(input_data):
     X, y = split_train_test(input_data, 9)
     y = np.argmax(input_data[:, 7:],1)
 
-    U, S, V = svd(input_data[:,:7], full_matrices=False)
+    U, S, V = svd(input_data[:,:], full_matrices=False)
 
-    X = np.dot(input_data[:,:7], V.T)
+    X = np.dot(input_data[:,:], V.T)
 
     # X = input_data
     N, M = X.shape
 
     # Number of clusters
-    K = 6
-    cov_type = 'diag'
+    K = 5
+    cov_type = 'full'
     # type of covariance, you can try out 'diag' as well
-    reps = 1
+    reps = 10
     # number of fits with different initalizations, best result will be kept
     # Fit Gaussian mixture model
     gmm = GaussianMixture(n_components=K, covariance_type=cov_type, n_init=reps).fit(X)
@@ -104,16 +105,22 @@ def draw_GMM(input_data):
     if cov_type == 'diag':
         new_covs = np.zeros([K, M, M])
 
+    if cov_type == 'full':
+        new_covs = np.zeros([K,M,M])
+
     count = 0
     for elem in covs:
         temp_m = np.zeros([M, M])
         for i in range(len(elem)):
-            temp_m[i][i] = elem[i]
+            for j in range(len(elem)):
+                temp_m[i][j] = elem[i][j]
 
         new_covs[count] = temp_m
         count += 1
 
     covs = new_covs
+
+    print(cds)
 
     # Plot results:
     # figure(figsize=(14, 9))
@@ -123,6 +130,7 @@ def draw_GMM(input_data):
 
     ## In case the number of features != 2, then a subset of features most be plotted instead.
     figure(figsize=(14, 9))
-    idx = [0, 3]  # feature index, choose two features to use as x and y axis in the plot
+    idx = [0, 1]  # feature index, choose two features to use as x and y axis in the plot
     clusterplot(X[:, idx], clusterid=cls, centroids=cds[:, idx], y=y, covars=covs[:, idx, :][:, :, idx])
+    title('Clusterplot with GMM with origin')
     show()

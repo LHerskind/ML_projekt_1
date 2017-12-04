@@ -15,7 +15,7 @@ def split_train_test(input_matrix, index):
 
 
 def Evaluate(input_data, index_to_check):
-    X = input_data
+    X = input_data[:,:7]
 
     y = np.argmax(input_data[:,7:10], 1)
     # X = StandardScaler().fit_transform(X)
@@ -44,7 +44,7 @@ def Evaluate(input_data, index_to_check):
     # Plot results:
 
     figure(1)
-    title('Cluster validity')
+    title('Cluster validity ')
     plot(np.arange(K) + 1, Rand)
     plot(np.arange(K) + 1, Jaccard)
     plot(np.arange(K) + 1, NMI)

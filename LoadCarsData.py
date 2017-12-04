@@ -356,8 +356,8 @@ if __name__ == '__main__':
 
     CV_GMM.CV_gauss(datamatrix_std_k, 7)
 
-    CV_GMM.draw_GMM(datamatrix_std_k)
-    CV_Agglomerative.Agglomerative(datamatrix_std_k, 7)
+    #CV_GMM.draw_GMM(datamatrix_std_k)
+    #CV_Agglomerative.Agglomerative(datamatrix_std_k, 7)
     #Evaluation_cluster.Evaluate(datamatrix_std_k, 7)
     #mining.mining(datamatrix_k)
 
